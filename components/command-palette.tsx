@@ -109,7 +109,7 @@ export function CommandPalette({
         </form>
 
         {open && value && (
-          <div className="absolute inset-x-0 top-full mt-2 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden">
+          <div className=" inset-x-0 top-full mt-2 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-90 overflow-hidden">
             <div className="py-2 px-1">
               <div className="px-2 py-1.5 text-xs font-semibold text-slate-400 uppercase">
                 PLATFORMS

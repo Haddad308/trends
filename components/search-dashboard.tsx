@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { CommandPalette } from "@/components/command-palette";
 import { ResultsPanel } from "@/components/results-panel";
 import { PlatformStats } from "@/components/platform-stats";
-import { ModeToggle } from "@/components/mode-toggle";
 import { Sparkles, History, BarChart3 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
@@ -83,9 +82,6 @@ export function SearchDashboard() {
             <span className="text-purple-400">Omni</span>
             <span className="text-pink-400">Search</span>
           </h1>
-          <div className="flex items-center gap-4">
-            <ModeToggle />
-          </div>
         </div>
       </header>
 
