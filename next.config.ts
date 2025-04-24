@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
       "en.wikipedia.org",
       "a.thumbs.redditmedia.com",
       "b.thumbs.redditmedia.com",
+      "i.ytimg.com",
     ],
   },
 };
