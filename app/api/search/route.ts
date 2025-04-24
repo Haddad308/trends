@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+const RedditLimit = Math.floor(Math.random() * (50 - 30 + 1)) + 30; // Reddit API limit for search results
+const YouTubeLimit = Math.floor(Math.random() * (50 - 30 + 1)) + 30; // YouTube API limit for search results
+const GoogleLimit = Math.floor(Math.random() * (10 - 5 + 1)) + 5; // Google API limit for search results
+
 // This implementation uses real APIs to fetch actual content
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -55,7 +59,7 @@ async function fetchYouTubeResults(query: string) {
     }
 
     const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${YouTubeLimit}&q=${encodeURIComponent(
         query
       )}&type=video&key=${apiKey}`
     );
@@ -161,7 +165,7 @@ async function fetchRedditResults(query: string) {
     const response = await fetch(
       `https://www.reddit.com/search.json?q=${encodeURIComponent(
         query
-      )}&limit=3&sort=relevance`,
+      )}&limit=${RedditLimit}&sort=relevance`,
       {
         headers: {
           // More descriptive User-Agent to comply with Reddit's requirements
@@ -356,7 +360,7 @@ async function fetchGoogleAlternativeResults(query: string) {
     const response = await fetch(
       `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
         query
-      )}&num=3`
+      )}&num=${GoogleLimit}`
     );
 
     if (!response.ok) {
