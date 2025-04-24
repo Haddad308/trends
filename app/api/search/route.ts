@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type NextRequest, NextResponse } from "next/server";
 
 // This implementation uses real APIs to fetch actual content
@@ -67,8 +66,27 @@ async function fetchYouTubeResults(query: string) {
 
     const data = await response.json();
 
+    interface itemVidoe {
+      id: {
+        videoId: string;
+      };
+      snippet: {
+        title: string;
+        description: string;
+        publishedAt: string;
+        channelTitle: string;
+        thumbnails: {
+          high: {
+            url: string;
+          };
+        };
+      };
+    }
+
     // Get video IDs to fetch additional details
-    const videoIds = data.items.map((item: any) => item.id.videoId).join(",");
+    const videoIds = data.items
+      .map((item: itemVidoe) => item.id.videoId)
+      .join(",");
 
     // Fetch additional video details including statistics and content details
     const videoDetailsResponse = await fetch(
@@ -81,10 +99,31 @@ async function fetchYouTubeResults(query: string) {
       );
     }
 
+    interface YouTubeVideoItem {
+      id: string;
+      snippet: {
+        title: string;
+        description: string;
+        publishedAt: string;
+        channelTitle: string;
+        thumbnails: {
+          high: {
+            url: string;
+          };
+        };
+      };
+      contentDetails: {
+        duration: string;
+      };
+      statistics: {
+        viewCount: string;
+      };
+    }
+
     const videoDetailsData = await videoDetailsResponse.json();
 
     // Format the response to match our UI components
-    return videoDetailsData.items.map((item: any) => {
+    return videoDetailsData.items.map((item: YouTubeVideoItem) => {
       // Parse ISO 8601 duration to human-readable format
       const duration = parseDuration(item.contentDetails.duration);
 
@@ -142,7 +181,29 @@ async function fetchRedditResults(query: string) {
     const data = await response.json();
 
     // Format the response to match our UI components
-    return data.data.children.map((child: any) => {
+    interface RedditPost {
+      data: {
+        title: string;
+        selftext: string;
+        url: string;
+        permalink: string;
+        subreddit: string;
+        author: string;
+        score: number;
+        num_comments: number;
+        created_utc: number;
+        gildings: {
+          gid_1?: number;
+          gid_2?: number;
+          gid_3?: number;
+        };
+        all_awardings?: Array<{ name: string }>;
+        thumbnail: string;
+        is_self: boolean;
+      };
+    }
+
+    return data.data.children.map((child: { data: RedditPost["data"] }) => {
       const post = child.data;
 
       // Calculate time since created
@@ -169,7 +230,11 @@ async function fetchRedditResults(query: string) {
 
       // Add all_awardings if available
       if (post.all_awardings && post.all_awardings.length > 0) {
-        post.all_awardings.forEach((award: any) => {
+        interface RedditAward {
+          name: string;
+        }
+
+        post.all_awardings.forEach((award: RedditAward) => {
           if (!awards.includes(award.name)) {
             awards.push(award.name);
           }
@@ -300,7 +365,18 @@ async function fetchGoogleAlternativeResults(query: string) {
 
     const data = await response.json();
 
-    return data.items.map((item: any) => ({
+    interface GoogleSearchItem {
+      title: string;
+      snippet: string;
+      link: string;
+      pagemap?: {
+        cse_image?: Array<{
+          src: string;
+        }>;
+      };
+    }
+
+    return data.items.map((item: GoogleSearchItem) => ({
       title: item.title,
       content: item.snippet,
       url: item.link,

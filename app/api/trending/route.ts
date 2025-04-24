@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -80,10 +79,18 @@ async function fetchYouTubeTrendingSuggestions(query: string) {
       throw new Error(`YouTube API error: ${response.status}`);
     }
 
+    interface YouTubeSearchItem {
+      snippet: {
+        title: string;
+      };
+    }
+
     const data = await response.json();
 
     // Extract keywords from video titles
-    const keywords = data.items.map((item: any) => item.snippet.title);
+    const keywords = data.items.map(
+      (item: YouTubeSearchItem) => item.snippet.title
+    );
 
     // Process the keywords into categories
     return processSuggestions(keywords, query);
