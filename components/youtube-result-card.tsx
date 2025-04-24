@@ -48,7 +48,7 @@ export function YoutubeResultCard({ video }: YoutubeResultProps) {
             fill
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="absolute inset-0 bg-transparent  bg-opacity-40 flex items-center justify-center">
             <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center">
               <Play className="h-6 w-6 text-white fill-white" />
             </div>

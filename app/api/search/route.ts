@@ -140,7 +140,7 @@ async function fetchYouTubeResults(query: string) {
         url: `https://www.youtube.com/watch?v=${item.id}`,
         thumbnail: item.snippet.thumbnails.high.url,
         channelName: item.snippet.channelTitle,
-        channelIcon: `/placeholder.svg?height=32&width=32`, // YouTube API doesn't provide channel icons in this response
+        channelIcon: item.snippet.thumbnails.high.url, // YouTube API doesn't provide channel icons in this response
         viewCount: `${formattedViewCount} views`,
         publishedAt: timeAgo,
         duration: duration,
