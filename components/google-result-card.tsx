@@ -25,7 +25,8 @@ export function GoogleResultCard({ result }: GoogleResultProps) {
     try {
       const domain = new URL(url).hostname;
       return domain;
-    } catch (e) {
+    } catch (_error) {
+      console.log("Error:", _error);
       return result.siteName;
     }
   };

@@ -291,7 +291,7 @@ export function TrendingTopics({
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-yellow-500" />
           <h3 className="font-medium text-yellow-300">
-            Featured Topics for "{searchTerm}"
+            Featured Topics for &ldquo;{searchTerm}&ldquo;
           </h3>
         </div>
         <div className="flex flex-wrap gap-2">

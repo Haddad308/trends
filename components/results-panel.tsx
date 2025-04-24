@@ -84,7 +84,7 @@ export function ResultsPanel({
           No results found
         </h2>
         <p className="text-slate-400 mb-6">
-          We couldn't find any results for "{searchTerm}"
+          We couldn&rdquo;t find any results for &rdquo;{searchTerm}&rdquo;
         </p>
         <Button onClick={() => onRelatedSearchClick("")}>
           Try a different search
@@ -98,7 +98,7 @@ export function ResultsPanel({
       <div className="p-4 border-b border-slate-700 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-white">
-            Results for "{searchTerm}"
+            Results for {searchTerm}&rdquo;
           </h2>
           <div className="flex items-center gap-2 mt-1">
             <Badge

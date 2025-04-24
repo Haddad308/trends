@@ -3,12 +3,31 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Youtube, Globe, MessageCircle } from "lucide-react";
 
+interface GoogleResult {
+  title: string;
+  link: string;
+  snippet: string;
+}
+
+interface YoutubeResult {
+  title: string;
+  link: string;
+  description: string;
+  thumbnailUrl: string;
+}
+
+interface RedditResult {
+  title: string;
+  link: string;
+  selftext: string;
+}
+
 interface PlatformStatsProps {
   searchTerm: string;
   results: {
-    google: any[];
-    youtube: any[];
-    reddit: any[];
+    google: GoogleResult[];
+    youtube: YoutubeResult[];
+    reddit: RedditResult[];
   };
 }
 

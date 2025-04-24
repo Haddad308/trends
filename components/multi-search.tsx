@@ -1,20 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, SetStateAction } from "react";
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { SearchResults } from "@/components/search-results";
 import { TrendingSuggestions } from "@/components/trending-suggestions";
 import { useDebounce } from "@/hooks/use-debounce";
+import { Input } from "./ui/input";
 
 export function MultiSearch() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [showTrending, setShowTrending] = useState(false);
+  interface SearchResult {
+    title: string;
+    link: string;
+    snippet: string;
+  }
+
   const [results, setResults] = useState<{
-    google: any[];
-    youtube: any[];
-    reddit: any[];
+    google: SearchResult[];
+    youtube: SearchResult[];
+    reddit: SearchResult[];
   }>({
     google: [],
     youtube: [],
@@ -69,7 +75,9 @@ export function MultiSearch() {
           placeholder="Search across platforms..."
           className="pl-10 py-6 text-lg rounded-xl border-indigo-200 focus:border-indigo-500 shadow-lg"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e: { target: { value: SetStateAction<string> } }) =>
+            setSearchTerm(e.target.value)
+          }
         />
       </div>
 
