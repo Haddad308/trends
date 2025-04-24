@@ -6,21 +6,17 @@ import { SearchResults } from "@/components/search-results";
 import { TrendingSuggestions } from "@/components/trending-suggestions";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "./ui/input";
+import { GoogleResult, RedditResult, YoutubeResult } from "@/app/types";
 
 export function MultiSearch() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [showTrending, setShowTrending] = useState(false);
-  interface SearchResult {
-    title: string;
-    link: string;
-    snippet: string;
-  }
 
   const [results, setResults] = useState<{
-    google: SearchResult[];
-    youtube: SearchResult[];
-    reddit: SearchResult[];
+    google: GoogleResult[];
+    youtube: YoutubeResult[];
+    reddit: RedditResult[];
   }>({
     google: [],
     youtube: [],

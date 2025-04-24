@@ -17,12 +17,13 @@ import { GoogleResultCard } from "@/components/google-result-card";
 import { YoutubeResultCard } from "@/components/youtube-result-card";
 import { RedditResultCard } from "@/components/reddit-result-card";
 import { RelatedSearches } from "@/components/related-searches";
+import { GoogleResult, RedditResult, YoutubeResult } from "@/app/types";
 
 interface ResultsPanelProps {
   results: {
-    google: any[];
-    youtube: any[];
-    reddit: any[];
+    google: GoogleResult[];
+    youtube: YoutubeResult[];
+    reddit: RedditResult[];
   };
   searchTerm: string;
   isLoading: boolean;

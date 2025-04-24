@@ -4,12 +4,13 @@ import { GoogleResultCard } from "@/components/google-result-card";
 import { YoutubeResultCard } from "@/components/youtube-result-card";
 import { RedditResultCard } from "@/components/reddit-result-card";
 import { Loader2 } from "lucide-react";
+import { GoogleResult, RedditResult, YoutubeResult } from "@/app/types";
 
 interface SearchResultsProps {
   results: {
-    google: any[];
-    youtube: any[];
-    reddit: any[];
+    google: GoogleResult[];
+    youtube: YoutubeResult[];
+    reddit: RedditResult[];
   };
   searchTerm: string;
   isLoading: boolean;
@@ -37,7 +38,7 @@ export function SearchResults({
     return (
       <Card className="p-8 text-center">
         <p className="text-lg text-muted-foreground">
-          No results found for "{searchTerm}"
+          No results found for &rdquo;{searchTerm}&rdquo;
         </p>
       </Card>
     );
