@@ -77,7 +77,7 @@ export function TrendingSuggestions({
       <CardHeader className="pb-2">
         <CardTitle className="text-xl flex items-center gap-2">
           <Search className="h-5 w-5 text-indigo-600" />
-          Trending Suggestions for "{debouncedSearchTerm}"
+          Trending Suggestions for &rdquo;{debouncedSearchTerm}&rdquo;
         </CardTitle>
       </CardHeader>
       <CardContent>
