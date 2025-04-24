@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type NextRequest, NextResponse } from "next/server";
 
 // This implementation uses real APIs to fetch actual content
@@ -159,7 +160,7 @@ async function fetchRedditResults(query: string) {
         post.thumbnail !== "spoiler";
 
       // Get awards (Reddit calls them "gildings")
-      const awards = [];
+      const awards: string[] = [];
       if (post.gildings) {
         if (post.gildings.gid_1) awards.push("Silver");
         if (post.gildings.gid_2) awards.push("Gold");
