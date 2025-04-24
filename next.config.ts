@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
       "a.thumbs.redditmedia.com",
       "b.thumbs.redditmedia.com",
       "i.ytimg.com",
+      "substackcdn.com",
+      "images.ctfassets.net",
+      "www.gstatic.com",
+      "ppl-ai-public.s3.amazonaws.com",
+      "cdn.openai.com",
     ],
   },
 };

@@ -278,114 +278,43 @@ function getMockRedditResults(query: string) {
 // For Google, we'll use a combination of public APIs to get real search results
 async function fetchGoogleAlternativeResults(query: string) {
   try {
-    // First try to get results from Google Books API which doesn't require authentication
-    const booksResponse = await fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+    const apiKey = process.env.GOOGLE_API_KEY;
+    const cx = process.env.GOOGLE_SEARCH_CX; // Custom Search Engine ID
+    console.log("Google API Key:", apiKey);
+    console.log("Google Search CX:", cx);
+
+    if (!apiKey || !cx) {
+      console.error("Google API key or Search Engine ID is missing");
+      return [];
+    }
+
+    const response = await fetch(
+      `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
         query
-      )}&maxResults=3`
+      )}&num=3`
     );
 
-    if (!booksResponse.ok) {
-      throw new Error(`Google Books API error: ${booksResponse.status}`);
+    if (!response.ok) {
+      throw new Error(`Google Search API error: ${response.status}`);
     }
 
-    const booksData = await booksResponse.json();
+    const data = await response.json();
 
-    if (booksData.items && booksData.items.length > 0) {
-      return booksData.items.map((book: any) => {
-        const volumeInfo = book.volumeInfo;
-
-        return {
-          title: volumeInfo.title,
-          content:
-            volumeInfo.description ||
-            `Book by ${volumeInfo.authors?.join(", ") || "Unknown author"}. ${
-              volumeInfo.pageCount ? `${volumeInfo.pageCount} pages.` : ""
-            } ${
-              volumeInfo.publishedDate
-                ? `Published: ${volumeInfo.publishedDate}`
-                : ""
-            }`,
-          url: volumeInfo.infoLink || volumeInfo.canonicalVolumeLink,
-          favicon: "https://books.google.com/favicon.ico",
-          siteName: "books.google.com",
-          screenshot:
-            volumeInfo.imageLinks?.thumbnail ||
-            `/placeholder.svg?height=160&width=320&text=Book`,
-        };
-      });
-    }
-
-    // If no book results, fall back to Wikipedia
-    throw new Error("No book results found");
-  } catch (booksError) {
-    console.error("Error fetching Google Books results:", booksError);
-
-    try {
-      // Using Wikipedia API as an alternative
-      const wikiResponse = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
-          query
-        )}&format=json&origin=*&srlimit=3`
-      );
-
-      if (!wikiResponse.ok) {
-        throw new Error(`Wikipedia API error: ${wikiResponse.status}`);
-      }
-
-      const wikiData = await wikiResponse.json();
-
-      return wikiData.query.search.map((result: any) => {
-        // Remove HTML tags from snippet
-        const content = result.snippet.replace(/<\/?[^>]+(>|$)/g, "");
-
-        return {
-          title: result.title,
-          content: content,
-          url: `https://en.wikipedia.org/wiki/${encodeURIComponent(
-            result.title.replace(/ /g, "_")
-          )}`,
-          favicon: "https://en.wikipedia.org/static/favicon/wikipedia.ico",
-          siteName: "wikipedia.org",
-          screenshot: `/placeholder.svg?height=160&width=320&text=Wikipedia`,
-        };
-      });
-    } catch (wikiError) {
-      console.error("Error fetching Wikipedia results:", wikiError);
-
-      // Final fallback to News API
-      try {
-        const newsResponse = await fetch(
-          `https://newsapi.org/v2/everything?q=${encodeURIComponent(
-            query
-          )}&pageSize=3&apiKey=sample-key`
-        );
-
-        if (!newsResponse.ok) {
-          throw new Error(`News API error: ${newsResponse.status}`);
-        }
-
-        const newsData = await newsResponse.json();
-
-        return newsData.articles.map((article: any) => {
-          return {
-            title: article.title,
-            content: article.description,
-            url: article.url,
-            favicon: `/placeholder.svg?height=16&width=16&text=${article.source.name
-              .charAt(0)
-              .toUpperCase()}`,
-            siteName: article.source.name,
-            screenshot:
-              article.urlToImage ||
-              `/placeholder.svg?height=160&width=320&text=News`,
-          };
-        });
-      } catch (newsError) {
-        console.error("Error fetching News results:", newsError);
-        return [];
-      }
-    }
+    return data.items.map((item: any) => ({
+      title: item.title,
+      content: item.snippet,
+      url: item.link,
+      favicon:
+        item.pagemap?.cse_image?.[0]?.src ||
+        `/placeholder.svg?height=16&width=16`,
+      siteName: new URL(item.link).hostname,
+      screenshot:
+        item.pagemap?.cse_image?.[0]?.src ||
+        `/placeholder.svg?height=160&width=320&text=Website`,
+    }));
+  } catch (error) {
+    console.error("Error fetching Google search results:", error);
+    return [];
   }
 }
 
