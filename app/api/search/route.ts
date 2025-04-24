@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-const RedditLimit = Math.floor(Math.random() * (50 - 30 + 1)) + 30; // Reddit API limit for search results
-const YouTubeLimit = Math.floor(Math.random() * (50 - 30 + 1)) + 30; // YouTube API limit for search results
+const RedditLimit = Math.floor(Math.random() * (20 - 10 + 1)) + 10; // Reddit API limit for search results
+const YouTubeLimit = Math.floor(Math.random() * (20 - 10 + 1)) + 10; // YouTube API limit for search results
 const GoogleLimit = Math.floor(Math.random() * (10 - 5 + 1)) + 5; // Google API limit for search results
 
 // This implementation uses real APIs to fetch actual content
