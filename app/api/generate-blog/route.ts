@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       temperature: 0.7,
       model: google("gemini-2.0-flash-exp"),
       system:
-        "You are a professional content writer. Based on the transcript, create a structured article with a title, and multiple headings each followed by a paragraph.",
+        "You are a professional content writer. Based on the transcript, create a long structured blog with a title, and multiple headings each followed by a paragraph.",
       schema: articleSchema,
       messages: [
         {
