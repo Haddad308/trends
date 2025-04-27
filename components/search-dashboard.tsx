@@ -10,6 +10,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { TrendingTopics } from "./trending-topics";
 import { SearchHistory } from "./search-history";
+import BlogGenerator from "./blog-generator";
 
 export function SearchDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -167,6 +168,9 @@ export function SearchDashboard() {
                 onRelatedSearchClick={handleSearch}
               />
             </div>
+          </div>
+          <div className="my-10">
+            <BlogGenerator />
           </div>
         </div>
       </div>
