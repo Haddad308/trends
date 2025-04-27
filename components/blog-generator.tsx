@@ -16,6 +16,7 @@ export default function BlogGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [blogContent, setBlogContent] = useState("");
   const [error, setError] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,12 +165,17 @@ export default function BlogGenerator() {
                     <pre className="bg-[#1a2236] p-4 rounded-md overflow-auto text-gray-300 text-sm">
                       {blogContent}
                     </pre>
+                    {/* Add state at the top of your component: const [isCopied, setIsCopied] = useState(false); */}
                     <Button
-                      onClick={() => navigator.clipboard.writeText(blogContent)}
+                      onClick={() => {
+                        navigator.clipboard.writeText(blogContent);
+                        setIsCopied(true);
+                        setTimeout(() => setIsCopied(false), 2000);
+                      }}
                       className="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700"
                       size="sm"
                     >
-                      Copy
+                      {isCopied ? "Copied!" : "Copy"}
                     </Button>
                   </div>
                 )}
