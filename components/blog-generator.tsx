@@ -90,9 +90,11 @@ export default function BlogGenerator() {
           </form>
           <div className="mt-4 space-y-4">
             <div className="space-y-2">
-              <h3 className="text-sm font-medium text-gray-400">
-                Featured Topics
-              </h3>
+              {featured.length > 0 && (
+                <h3 className="text-sm font-medium text-gray-400">
+                  Featured Topics
+                </h3>
+              )}
               <div className="flex flex-wrap gap-2">
                 {featured.map((topic) => (
                   <Badge
