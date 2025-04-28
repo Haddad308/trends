@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, RefreshCw, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import BlogContent from "./blog-content";
+import { useTrendingTopics } from "@/store/useTrendingTopics";
 
 export default function BlogGenerator() {
   const [keyword, setKeyword] = useState("");
@@ -17,6 +18,8 @@ export default function BlogGenerator() {
   const [blogContent, setBlogContent] = useState("");
   const [error, setError] = useState("");
   const [isCopied, setIsCopied] = useState(false);
+
+  const { categories, featured } = useTrendingTopics();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +72,7 @@ export default function BlogGenerator() {
                 className="pl-10 bg-[#1a2236] border-gray-700 text-white"
               />
             </div>
+
             <Button
               type="submit"
               disabled={isGenerating || !keyword.trim()}
@@ -84,6 +88,53 @@ export default function BlogGenerator() {
               )}
             </Button>
           </form>
+          <div className="mt-4 space-y-4">
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-gray-400">
+                Featured Topics
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {featured.map((topic) => (
+                  <Badge
+                    key={topic}
+                    className="cursor-pointer bg-purple-900/20 hover:bg-purple-800/30 text-purple-300 border-purple-800"
+                    onClick={() => {
+                      setKeyword(topic);
+                      handleSubmit({
+                        preventDefault: () => {},
+                      } as React.FormEvent);
+                    }}
+                  >
+                    {topic}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {categories.map((category) => (
+              <div key={category.name} className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-400">
+                  {category.name}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {category.topics.map((topic) => (
+                    <Badge
+                      key={topic}
+                      className="cursor-pointer bg-purple-900/20 hover:bg-purple-800/30 text-purple-300 border-purple-800"
+                      onClick={() => {
+                        setKeyword(topic);
+                        handleSubmit({
+                          preventDefault: () => {},
+                        } as React.FormEvent);
+                      }}
+                    >
+                      {topic}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </Card>
 

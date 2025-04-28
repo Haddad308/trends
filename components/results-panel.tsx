@@ -16,7 +16,6 @@ import {
 import { GoogleResultCard } from "@/components/google-result-card";
 import { YoutubeResultCard } from "@/components/youtube-result-card";
 import { RedditResultCard } from "@/components/reddit-result-card";
-import { RelatedSearches } from "@/components/related-searches";
 import { GoogleResult, RedditResult, YoutubeResult } from "@/app/types";
 
 interface ResultsPanelProps {
@@ -180,11 +179,11 @@ export function ResultsPanel({
 
         <div className="flex-1 overflow-y-auto p-4 h-[calc(100vh-180px)]">
           <TabsContent value="all" className="h-full mt-0 space-y-6">
-            {/* Related Searches */}
+            {/* Related Searches
             <RelatedSearches
               searchTerm={searchTerm}
               onRelatedSearchClick={onRelatedSearchClick}
-            />
+            /> */}
 
             {/* Google Results */}
             {results.google.length > 0 && (
