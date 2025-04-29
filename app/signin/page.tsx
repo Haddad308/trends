@@ -12,7 +12,6 @@ import { Separator } from "@/components/ui/separator";
 import { FcGoogle } from "react-icons/fc";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/firebase/auth-context";
-import Image from "next/image";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -64,16 +63,12 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center p-4 md:p-8">
         <div className="bg-white rounded-lg shadow-xl p-6 md:p-8 w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <Image src={"/logo.webp"} width={50} height={50} alt="logo" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Transform Your Content
+            <h1 className="text-2xl font-bold">
+              <span className="text-purple-400">Omni</span>
+              <span className="text-pink-400">Search</span>
             </h1>
-            <p className="text-gray-600 mt-2">
-              Sign in to convert your videos into audio and get detailed
-              transcriptions instantly
-            </p>
+
+            <p className="text-gray-600 mt-2">Search About All You Need</p>
           </div>
 
           {error && (
@@ -142,8 +137,8 @@ export default function LoginPage() {
             </div>
 
             <Button
-              variant="outline"
-              className="w-full mt-4 flex items-center justify-center"
+              variant="ghost"
+              className="w-full bg-gray-900 cursor-pointer mt-4 flex items-center justify-center"
               onClick={handleGoogleSignIn}
               disabled={isLoading}
             >

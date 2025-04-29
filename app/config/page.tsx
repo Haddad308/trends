@@ -1,17 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Settings,
@@ -19,14 +12,10 @@ import {
   AlertCircle,
   Loader2,
   ArrowLeft,
-  Key,
-  Shield,
 } from "lucide-react";
 import { useAuth } from "@/firebase/auth-context";
 import { Label } from "@/components/ui/label";
 import { saveApiKey, getApiKey } from "@/firebase/firestore";
-import { getUserUsageStats } from "@/firebase/usage";
-import { Separator } from "@/components/ui/separator";
 
 export default function ConfigPage() {
   const { user } = useAuth();
@@ -38,36 +27,6 @@ export default function ConfigPage() {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [usageStats, setUsageStats] = useState<{
-    currentMonthStats: {
-      transcriptionCost: number;
-      transcriptionMinutes: number;
-      articleCost: number;
-      articleCount: number;
-      totalCost: number;
-    };
-    totalStats: {
-      transcriptionCost: number;
-      articleCost: number;
-      totalCost: number;
-      lastUpdated: { toDate: () => Date } | null;
-    };
-  } | null>(null);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
-
-  const fetchUsageStats = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      setIsLoadingStats(true);
-      const stats = await getUserUsageStats(user.uid);
-      setUsageStats(stats);
-    } catch (error) {
-      console.error("Error fetching usage stats:", error);
-    } finally {
-      setIsLoadingStats(false);
-    }
-  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -91,18 +50,17 @@ export default function ConfigPage() {
     };
 
     fetchApiKey();
-    fetchUsageStats();
-  }, [user, router, fetchUsageStats]);
+  }, [user, router]);
 
   const validateApiKey = (key: string) => {
-    // Basic validation - Hugging Face API keys typically start with "hf_" and are longer than 10 chars
-    return key.startsWith("hf_") && key.length > 10;
+    // Basic validation for Google Gemini API keys - they are typically longer than 20 chars
+    return key.length >= 20;
   };
 
   const testApiKey = async () => {
     if (!validateApiKey(apiKey)) {
       setErrorMessage(
-        "Invalid API key format. Hugging Face API keys typically start with 'hf_'"
+        "Invalid API key format. Google Gemini API keys are typically at least 20 characters long"
       );
       setTestStatus("error");
       return;
@@ -112,30 +70,33 @@ export default function ConfigPage() {
     setErrorMessage("");
 
     try {
-      // Test the API key by making a simple request to the Hugging Face API
+      // Test the API key by making a simple request to the Google Gemini API
       const response = await fetch(
-        "https://api-inference.huggingface.co/models/openai/whisper-large-v3-turbo",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
+          apiKey,
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ inputs: "Test" }),
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [{ text: "Hello" }],
+              },
+            ],
+          }),
         }
       );
 
-      if (response.ok || response.status === 400) {
-        // 400 is acceptable here as it means the API key is valid but the request format is wrong
+      if (response.ok) {
         setTestStatus("success");
       } else {
         throw new Error(`API test failed with status: ${response.status}`);
       }
     } catch (error) {
       console.error("API key test failed:", error);
-      setErrorMessage(
-        `Failed to validate API key: ${(error as Error).message}`
-      );
+      setErrorMessage(`API key not valid.`);
       setTestStatus("error");
     }
   };
@@ -149,7 +110,7 @@ export default function ConfigPage() {
 
     if (!validateApiKey(apiKey)) {
       setErrorMessage(
-        "Invalid API key format. Hugging Face API keys typically start with 'hf_'"
+        "Invalid API key format. Google Gemini API keys are typically at least 20 characters long"
       );
       setTestStatus("error");
       return;
@@ -176,11 +137,11 @@ export default function ConfigPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-800 ">
-      <div className="container mx-auto px-4 py-12 max-w-3xl ">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <div className="container mx-auto px-4 py-12 max-w-3xl">
         <Button
           variant="ghost"
-          className="mb-6 text-purple-600 hover:text-purple-800 hover:bg-purple-100"
+          className="mb-6 text-purple-600 dark:text-purple-400 hover:text-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900"
           onClick={() => router.push("/")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -188,30 +149,23 @@ export default function ConfigPage() {
         </Button>
 
         <div className="text-center mb-8">
-          <div className="inline-block mb-4 bg-purple-100 p-3 rounded-full">
-            <Settings className="h-8 w-8 text-purple-600" />
+          <div className="inline-block mb-4 bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
+            <Settings className="h-8 w-8 text-purple-600 dark:text-purple-400" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Configuration</h1>
-          <p className="text-gray-300">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Configuration
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
             Manage your API keys and application settings
           </p>
         </div>
 
-        <Card className="shadow-lg border-0 bg-gray-800">
-          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-            <CardTitle className="flex items-center">
-              <Key className="mr-2 h-5 w-5" />
-              Hugging Face API Key
-            </CardTitle>
-            <CardDescription className="text-white/80">
-              Configure your Hugging Face API key for transcription services
-            </CardDescription>
-          </CardHeader>
+        <Card className="shadow-lg border-0 bg-white dark:bg-gray-800">
           <CardContent className="pt-6">
             {isFetching ? (
               <div className="flex justify-center items-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
-                <span className="ml-3 text-gray-600">
+                <span className="ml-3 text-gray-600 dark:text-gray-300">
                   Loading your settings...
                 </span>
               </div>
@@ -222,23 +176,23 @@ export default function ConfigPage() {
                   <Input
                     id="api-key"
                     type="password"
-                    placeholder="Enter your Hugging Face API key (hf_...)"
+                    placeholder="Enter your Google Gemini API key"
                     value={apiKey}
                     onChange={(e) => {
                       setApiKey(e.target.value);
                       setTestStatus("idle");
                     }}
-                    className="font-mono"
+                    className="font-mono dark:bg-gray-700 dark:text-white"
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     You can get your API key from the{" "}
                     <a
-                      href="https://huggingface.co/settings/tokens"
+                      href="https://aistudio.google.com/app/apikey"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-purple-600 hover:underline"
+                      className="text-purple-600 dark:text-purple-400 hover:underline"
                     >
-                      Hugging Face settings page
+                      Google AI Studio
                     </a>
                   </p>
                 </div>
@@ -248,7 +202,7 @@ export default function ConfigPage() {
                     variant="outline"
                     onClick={testApiKey}
                     disabled={testStatus === "loading" || !apiKey}
-                    className="flex-1"
+                    className="flex-1 dark:bg-gray-700 dark:text-white"
                   >
                     {testStatus === "loading" ? (
                       <>
@@ -262,7 +216,7 @@ export default function ConfigPage() {
                   <Button
                     onClick={saveApiKeyToFirebase}
                     disabled={testStatus !== "success" || isLoading}
-                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
                   >
                     {isLoading ? (
                       <>
@@ -276,7 +230,7 @@ export default function ConfigPage() {
                 </div>
 
                 {testStatus === "success" && (
-                  <Alert className="bg-green-50 border-green-200 text-green-800">
+                  <Alert className="bg-green-50 dark:bg-green-900 border-green-200 dark:border-green-800 text-green-800 dark:text-green-100">
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     <AlertTitle>Success</AlertTitle>
                     <AlertDescription>
@@ -292,158 +246,6 @@ export default function ConfigPage() {
                     <AlertDescription>{errorMessage}</AlertDescription>
                   </Alert>
                 )}
-              </div>
-            )}
-          </CardContent>
-          <CardFooter className="bg-gray-50 border-t border-gray-100 flex justify-between">
-            <div className="text-sm text-gray-500 flex items-center">
-              <Shield className="h-4 w-4 mr-2 text-purple-500" />
-              Your API key is securely stored and encrypted in our database.
-            </div>
-          </CardFooter>
-        </Card>
-
-        {/* Usage Statistics Card */}
-        <Card className="shadow-lg border-0 mt-6 bg-gray-800">
-          <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
-            <CardTitle className="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mr-2"
-              >
-                <path d="M12 20V10"></path>
-                <path d="M18 20V4"></path>
-                <path d="M6 20v-4"></path>
-              </svg>
-              Usage Statistics
-            </CardTitle>
-            <CardDescription className="text-white/80">
-              Track your AI service usage and associated costs
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {isLoadingStats ? (
-              <div className="flex justify-center items-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-                <span className="ml-3 text-gray-600">
-                  Loading your usage statistics...
-                </span>
-              </div>
-            ) : usageStats ? (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-3">
-                    Current Month Usage
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <div className="text-blue-600 font-medium">
-                        Transcription
-                      </div>
-                      <div className="mt-1 text-2xl font-bold">
-                        $
-                        {usageStats.currentMonthStats.transcriptionCost.toFixed(
-                          2
-                        )}
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        {usageStats.currentMonthStats.transcriptionMinutes.toFixed(
-                          1
-                        )}{" "}
-                        minutes processed
-                      </div>
-                    </div>
-                    <div className="bg-purple-50 rounded-lg p-4">
-                      <div className="text-purple-600 font-medium">
-                        Article Generation
-                      </div>
-                      <div className="mt-1 text-2xl font-bold">
-                        ${usageStats.currentMonthStats.articleCost.toFixed(2)}
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        {usageStats.currentMonthStats.articleCount} articles
-                        generated
-                      </div>
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-4">
-                      <div className="text-green-600 font-medium">Total</div>
-                      <div className="mt-1 text-2xl font-bold">
-                        ${usageStats.currentMonthStats.totalCost.toFixed(2)}
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        This month&apos;s combined usage
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <h3 className="text-lg font-medium mb-3">All-Time Usage</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <div className="text-blue-600 font-medium">
-                        Transcription
-                      </div>
-                      <div className="mt-1 text-2xl font-bold">
-                        ${usageStats.totalStats.transcriptionCost.toFixed(2)}
-                      </div>
-                    </div>
-                    <div className="bg-purple-50 rounded-lg p-4">
-                      <div className="text-purple-600 font-medium">
-                        Article Generation
-                      </div>
-                      <div className="mt-1 text-2xl font-bold">
-                        ${usageStats.totalStats.articleCost.toFixed(2)}
-                      </div>
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-4">
-                      <div className="text-green-600 font-medium">Total</div>
-                      <div className="mt-1 text-2xl font-bold">
-                        ${usageStats.totalStats.totalCost.toFixed(2)}
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        Last updated:{" "}
-                        {usageStats.totalStats.lastUpdated
-                          ? new Date(
-                              usageStats.totalStats.lastUpdated.toDate()
-                            ).toLocaleString()
-                          : "Never"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-700">
-                  <div className="flex items-start">
-                    <div className="bg-blue-100 p-1 rounded-full mr-2 mt-0.5">
-                      <AlertCircle className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <span className="font-medium">Note:</span> These costs are
-                      estimates based on standard pricing for AI services.
-                      Actual billing may vary based on your Hugging Face account
-                      plan and usage.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <div className="mb-2">No usage data available yet</div>
-                <div className="text-sm">
-                  Start using transcription and article generation to see your
-                  usage statistics
-                </div>
               </div>
             )}
           </CardContent>

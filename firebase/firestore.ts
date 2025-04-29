@@ -9,7 +9,7 @@ export const saveApiKey = async (userId: string, apiKey: string) => {
     await setDoc(
       doc(db, "users", userId),
       {
-        huggingfaceApiKey: apiKey,
+        giminiApiKey: apiKey,
         updatedAt: new Date().toISOString(),
       },
       { merge: true }
@@ -28,7 +28,7 @@ export const getApiKey = async (userId: string) => {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      return docSnap.data().huggingfaceApiKey;
+      return docSnap.data().giminiApiKey;
     } else {
       return null;
     }
