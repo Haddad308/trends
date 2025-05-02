@@ -25,21 +25,21 @@ const CreateContentSection = () => {
             </Button>
             <Button
               className="bg-purple-600 hover:bg-purple-700"
-              onClick={() => router.push("/content-creation/hooks-generator")}
+              onClick={() => router.push("/content-creation/hook-generator")}
             >
-              Hooks Generator
+              Hook Generator
             </Button>
             <Button
               className="bg-purple-600 hover:bg-purple-700"
-              onClick={() => router.push("/content-creation/scripts-generator")}
+              onClick={() => router.push("/content-creation/script-generator")}
             >
-              Scripts Generator
+              Script Generator
             </Button>
             <Button
               className="bg-purple-600 hover:bg-purple-700"
-              onClick={() => router.push("/content-creation/posts-generator")}
+              onClick={() => router.push("/content-creation/post-generator")}
             >
-              Posts Generator
+              Post Generator
             </Button>
           </div>
           <Button
