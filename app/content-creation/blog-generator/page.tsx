@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import BlogContent from "../../../components/blog-content";
 import { useTrendingTopics } from "@/store/useTrendingTopics";
 
-const page = () => {
+const Page = () => {
   const [keyword, setKeyword] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [blogContent, setBlogContent] = useState("");
@@ -239,4 +239,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

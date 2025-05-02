@@ -8,7 +8,7 @@ import { Loader2, RefreshCw, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTrendingTopics } from "@/store/useTrendingTopics";
 
-const page = () => {
+const Page = () => {
   const [keyword, setKeyword] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [hashtags, setHashtags] = useState<string[] | null>(null);
@@ -219,4 +219,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
