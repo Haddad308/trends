@@ -10,7 +10,6 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { TrendingTopics } from "./trending-topics";
 import { SearchHistory } from "./search-history";
-import BlogGenerator from "./blog-generator";
 import Navbar from "./Navbar";
 
 export function SearchDashboard() {
@@ -76,7 +75,7 @@ export function SearchDashboard() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <section className="flex flex-col bg-background">
       <Navbar />
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
@@ -161,11 +160,8 @@ export function SearchDashboard() {
               />
             </div>
           </div>
-          <div className="my-10">
-            <BlogGenerator />
-          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

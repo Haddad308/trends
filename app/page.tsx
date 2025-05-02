@@ -1,5 +1,6 @@
 "use client";
 
+import CreateContentSection from "@/components/CreateContentSection";
 import { SearchDashboard } from "@/components/search-dashboard";
 import { useAuth } from "@/firebase/auth-context";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-900 text-white">
       <SearchDashboard />
+      <CreateContentSection />
     </main>
   );
 }

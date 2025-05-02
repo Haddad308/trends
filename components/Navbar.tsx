@@ -9,7 +9,7 @@ const Navbar = () => {
   const router = useRouter();
 
   return (
-    <header className="bg-background border-b border-slate-700 dark:border-slate-700 p-4">
+    <header className="bg-slate-900 border-b border-slate-700 dark:border-slate-700 p-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <h1 className="text-2xl font-bold">
           <span className="text-purple-400">Omni</span>

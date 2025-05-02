@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,10 +7,10 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, RefreshCw, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import BlogContent from "./blog-content";
+import BlogContent from "../../../components/blog-content";
 import { useTrendingTopics } from "@/store/useTrendingTopics";
 
-export default function BlogGenerator() {
+const page = () => {
   const [keyword, setKeyword] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [blogContent, setBlogContent] = useState("");
@@ -239,4 +237,6 @@ export default function BlogGenerator() {
       )}
     </div>
   );
-}
+};
+
+export default page;
