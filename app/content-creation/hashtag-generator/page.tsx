@@ -4,16 +4,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, RefreshCw, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import BlogContent from "../../../components/blog-content";
 import { useTrendingTopics } from "@/store/useTrendingTopics";
 
 const page = () => {
   const [keyword, setKeyword] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [blogContent, setBlogContent] = useState("");
+  const [hashtags, setHashtags] = useState<string[] | null>(null);
   const [error, setError] = useState("");
   const [isCopied, setIsCopied] = useState(false);
 
@@ -27,7 +25,7 @@ const page = () => {
     setError("");
 
     try {
-      const response = await fetch("/api/generate-blog", {
+      const response = await fetch("/api/generate-hashtags", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,7 +39,7 @@ const page = () => {
       }
 
       const data = await response.json();
-      setBlogContent(data.content);
+      setHashtags(data.content);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred"
@@ -56,7 +54,7 @@ const page = () => {
       <Card className="bg-[#151F33] border-gray-800">
         <div className="p-6">
           <h2 className="text-xl font-semibold text-white mb-4">
-            Generate Blog Content
+            Generate Hashtags
           </h2>
 
           <form onSubmit={handleSubmit} className="flex gap-2">
@@ -82,7 +80,7 @@ const page = () => {
                   Generating
                 </>
               ) : (
-                "Generate Blog"
+                "Generate Hashtags"
               )}
             </Button>
           </form>
@@ -144,12 +142,14 @@ const page = () => {
         </div>
       )}
 
-      {(isGenerating || blogContent) && (
+      {(isGenerating || hashtags) && (
         <Card className="bg-[#151F33] border-gray-800">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">Blog Results</h2>
-              {blogContent && (
+              <h2 className="text-xl font-semibold text-white">
+                Hashtags Results
+              </h2>
+              {hashtags && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -176,50 +176,30 @@ const page = () => {
               </Badge>
             </div>
 
-            <Tabs defaultValue="preview" className="w-full">
-              <TabsList className="bg-[#1a2236] border-gray-700">
-                <TabsTrigger
-                  value="preview"
-                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-                >
-                  Preview
-                </TabsTrigger>
-                <TabsTrigger
-                  value="markdown"
-                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-                >
-                  Markdown
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="preview" className="mt-4">
+            <div className="w-full">
+              <div className="mt-4">
                 {isGenerating ? (
                   <div className="flex justify-center items-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
                     <span className="ml-3 text-gray-400">
-                      Generating blog content...
-                    </span>
-                  </div>
-                ) : (
-                  <BlogContent content={blogContent} />
-                )}
-              </TabsContent>
-              <TabsContent value="markdown" className="mt-4">
-                {isGenerating ? (
-                  <div className="flex justify-center items-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
-                    <span className="ml-3 text-gray-400">
-                      Generating blog content...
+                      Generating Hashtags...
                     </span>
                   </div>
                 ) : (
                   <div className="relative">
-                    <pre className="bg-[#1a2236] p-4 rounded-md overflow-auto text-gray-300 text-sm">
-                      {blogContent}
-                    </pre>
-                    {/* Add state at the top of your component: const [isCopied, setIsCopied] = useState(false); */}
+                    {hashtags?.map((hashtag, index) => (
+                      <span
+                        key={index}
+                        className="inline-block bg-purple-900/20 text-purple-300 border-purple-800 rounded-full px-3 py-1 mr-2 mb-2"
+                      >
+                        {hashtag}
+                      </span>
+                    ))}
                     <Button
                       onClick={() => {
-                        navigator.clipboard.writeText(blogContent);
+                        navigator.clipboard.writeText(
+                          hashtags?.join(" ") || ""
+                        );
                         setIsCopied(true);
                         setTimeout(() => setIsCopied(false), 2000);
                       }}
@@ -230,8 +210,8 @@ const page = () => {
                     </Button>
                   </div>
                 )}
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
           </div>
         </Card>
       )}
