@@ -17,6 +17,7 @@ import { GoogleResultCard } from "@/components/google-result-card";
 import { YoutubeResultCard } from "@/components/youtube-result-card";
 import { RedditResultCard } from "@/components/reddit-result-card";
 import { GoogleResult, RedditResult, YoutubeResult } from "@/app/types";
+import { PaginationNavigation } from "./PaginationNavigation";
 
 interface ResultsPanelProps {
   results: {
@@ -35,8 +36,13 @@ export function ResultsPanel({
   isLoading,
   onRelatedSearchClick,
 }: ResultsPanelProps) {
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState<
+    "all" | "google" | "youtube" | "reddit"
+  >("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const itemsPerPage = activeTab === "youtube" ? 6 : 5; // Number of items to display per page
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -98,7 +104,7 @@ export function ResultsPanel({
       <div className="p-4 border-b border-slate-700 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-white">
-            Results for {searchTerm}&rdquo;
+            Results for &rdquo;{searchTerm}&rdquo;
           </h2>
           <div className="flex items-center gap-2 mt-1">
             <Badge
@@ -142,7 +148,11 @@ export function ResultsPanel({
 
       <Tabs
         value={activeTab}
-        onValueChange={setActiveTab}
+        onValueChange={(value: string) => {
+          const tab = value as "all" | "google" | "youtube" | "reddit";
+          setActiveTab(tab);
+          setCurrentPage(1);
+        }}
         className="flex-1 flex flex-col"
       >
         <div className="px-4 pt-4">
@@ -177,7 +187,7 @@ export function ResultsPanel({
           </TabsList>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 h-[calc(100vh-180px)]">
+        <div className="flex-1 overflow-y-auto p-4">
           <TabsContent value="all" className="h-full mt-0 space-y-6">
             {/* Related Searches
             <RelatedSearches
@@ -242,9 +252,18 @@ export function ResultsPanel({
 
           <TabsContent value="google" className="h-full mt-0">
             <div className="grid grid-cols-1 gap-4">
-              {results.google.map((result, index) => (
-                <GoogleResultCard key={`google-tab-${index}`} result={result} />
-              ))}
+              {results.google
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <GoogleResultCard
+                    key={`google-tab-${index}`}
+                    result={result}
+                  />
+                ))}
+
               {results.google.length === 0 && (
                 <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
                   <p className="text-slate-400">No Google results to display</p>
@@ -255,12 +274,17 @@ export function ResultsPanel({
 
           <TabsContent value="youtube" className="h-full mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {results.youtube.map((result, index) => (
-                <YoutubeResultCard
-                  key={`youtube-tab-${index}`}
-                  video={result}
-                />
-              ))}
+              {results.youtube
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <YoutubeResultCard
+                    key={`youtube-tab-${index}`}
+                    video={result}
+                  />
+                ))}
               {results.youtube.length === 0 && (
                 <Card className="col-span-2 p-8 text-center bg-slate-800/50 border-slate-700">
                   <p className="text-slate-400">
@@ -273,9 +297,14 @@ export function ResultsPanel({
 
           <TabsContent value="reddit" className="h-full mt-0">
             <div className="grid grid-cols-1 gap-4">
-              {results.reddit.map((result, index) => (
-                <RedditResultCard key={`reddit-tab-${index}`} post={result} />
-              ))}
+              {results.reddit
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <RedditResultCard key={`reddit-tab-${index}`} post={result} />
+                ))}
               {results.reddit.length === 0 && (
                 <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
                   <p className="text-slate-400">No Reddit results to display</p>
@@ -284,6 +313,14 @@ export function ResultsPanel({
             </div>
           </TabsContent>
         </div>
+        {activeTab !== "all" && results[activeTab].length > 5 && (
+          <PaginationNavigation
+            currentPage={currentPage}
+            totalItems={results[activeTab].length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        )}
       </Tabs>
     </div>
   );
