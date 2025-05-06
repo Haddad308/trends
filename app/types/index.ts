@@ -33,3 +33,18 @@ export interface RedditResult {
   isTextPost: boolean;
   createdAt: string;
 }
+
+export interface XResults {
+  id: string;
+  text: string;
+  authorName: string;
+  authorUsername: string;
+  authorProfileImage: string;
+  createdAt: string;
+  url: string;
+  source: string;
+  replies: number;
+  retweets: number;
+  favorites: number;
+  views: number;
+}

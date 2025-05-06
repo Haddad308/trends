@@ -12,18 +12,27 @@ import {
   MessageCircle,
   RefreshCw,
   Search,
+  LucideTwitter,
+  TwitterIcon,
 } from "lucide-react";
 import { GoogleResultCard } from "@/components/google-result-card";
 import { YoutubeResultCard } from "@/components/youtube-result-card";
 import { RedditResultCard } from "@/components/reddit-result-card";
-import { GoogleResult, RedditResult, YoutubeResult } from "@/app/types";
+import {
+  GoogleResult,
+  RedditResult,
+  XResults,
+  YoutubeResult,
+} from "@/app/types";
 import { PaginationNavigation } from "./PaginationNavigation";
+import { XResultCard } from "./xResultCard";
 
 interface ResultsPanelProps {
   results: {
     google: GoogleResult[];
     youtube: YoutubeResult[];
     reddit: RedditResult[];
+    x: XResults[];
   };
   searchTerm: string;
   isLoading: boolean;
@@ -37,7 +46,7 @@ export function ResultsPanel({
   onRelatedSearchClick,
 }: ResultsPanelProps) {
   const [activeTab, setActiveTab] = useState<
-    "all" | "google" | "youtube" | "reddit"
+    "all" | "google" | "youtube" | "reddit" | "x"
   >("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -128,6 +137,10 @@ export function ResultsPanel({
               <MessageCircle className="h-3 w-3 mr-1" />
               {results.reddit.length}
             </Badge>
+            <Badge variant="outline" className="bg-slate-900 border-black">
+              <TwitterIcon className="h-3 w-3 mr-1" />
+              {results.x.length}
+            </Badge>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -156,7 +169,7 @@ export function ResultsPanel({
         className="flex-1 flex flex-col"
       >
         <div className="px-4 pt-4">
-          <TabsList className="grid grid-cols-4 bg-slate-900">
+          <TabsList className="grid grid-cols-5 bg-slate-900">
             <TabsTrigger
               value="all"
               className="data-[state=active]:bg-slate-800"
@@ -183,6 +196,12 @@ export function ResultsPanel({
             >
               <MessageCircle className="h-4 w-4" />
               Reddit
+            </TabsTrigger>
+            <TabsTrigger
+              value="x"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-slate-950/90"
+            >
+              <LucideTwitter className="h-4 w-4" />X
             </TabsTrigger>
           </TabsList>
         </div>
@@ -308,6 +327,23 @@ export function ResultsPanel({
               {results.reddit.length === 0 && (
                 <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
                   <p className="text-slate-400">No Reddit results to display</p>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+          <TabsContent value="x" className="h-full mt-0">
+            <div className="grid grid-cols-1 gap-4">
+              {results.x
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <XResultCard key={`x-tab-${index}`} tweet={result} />
+                ))}
+              {results.x.length === 0 && (
+                <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
+                  <p className="text-slate-400">No X results to display</p>
                 </Card>
               )}
             </div>

@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 const RedditLimit = Math.floor(Math.random() * (20 - 10 + 1)) + 10; // Reddit API limit for search results
 const YouTubeLimit = Math.floor(Math.random() * (20 - 10 + 1)) + 10; // YouTube API limit for search results
 const GoogleLimit = Math.floor(Math.random() * (10 - 5 + 1)) + 5; // Google API limit for search results
+const XLimit = Math.floor(Math.random() * (10 - 5 + 1)) + 5; // Instagram result limit (mock/scraped/custom API)
 
 // This implementation uses real APIs to fetch actual content
 export async function GET(request: NextRequest) {
@@ -18,25 +19,31 @@ export async function GET(request: NextRequest) {
 
   try {
     // Fetch data from all platforms in parallel with individual error handling
-    const [youtubeResults, redditResults, googleResults] = await Promise.all([
-      fetchYouTubeResults(query).catch((error) => {
-        console.error("YouTube search error:", error);
-        return [];
-      }),
-      fetchRedditResults(query).catch((error) => {
-        console.error("Reddit search error:", error);
-        return getMockRedditResults(query);
-      }),
-      fetchGoogleAlternativeResults(query).catch((error) => {
-        console.error("Google search error:", error);
-        return [];
-      }),
-    ]);
+    const [youtubeResults, redditResults, googleResults, xResults] =
+      await Promise.all([
+        fetchYouTubeResults(query).catch((error) => {
+          console.error("YouTube search error:", error);
+          return [];
+        }),
+        fetchRedditResults(query).catch((error) => {
+          console.error("Reddit search error:", error);
+          return getMockRedditResults(query);
+        }),
+        fetchGoogleAlternativeResults(query).catch((error) => {
+          console.error("Google search error:", error);
+          return [];
+        }),
+        fetchXResults(query).catch((error) => {
+          console.error("Instagram search error:", error);
+          return [];
+        }),
+      ]);
 
     return NextResponse.json({
       youtube: youtubeResults,
       reddit: redditResults,
       google: googleResults,
+      x: xResults,
     });
   } catch (error) {
     console.error("Error fetching search results:", error);
@@ -45,6 +52,7 @@ export async function GET(request: NextRequest) {
       youtube: [],
       reddit: getMockRedditResults(query),
       google: [],
+      x: [],
       error: "Some search results could not be fetched",
     });
   }
@@ -394,6 +402,59 @@ async function fetchGoogleAlternativeResults(query: string) {
     }));
   } catch (error) {
     console.error("Error fetching Google search results:", error);
+    return [];
+  }
+}
+
+// For X (formerly Twitter), we'll use rapidAPI to fetch the latest posts
+async function fetchXResults(query: string) {
+  try {
+    const url = `https://twitter-api45.p.rapidapi.com/search_communities_latest.php?query=${encodeURIComponent(
+      query
+    )}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "X-RapidAPI-Key": process.env.X_RAPIDAPI_KEY || "",
+        "X-RapidAPI-Host": process.env.X_RAPIDAPI_HOST || "",
+      },
+    });
+
+    if (!response.ok) {
+      console.error("X API Error:", response.status, await response.text());
+      throw new Error("Failed to fetch X posts");
+    }
+
+    const data = await response.json();
+    const timeline = data.timeline;
+
+    if (!Array.isArray(timeline)) {
+      console.error("Invalid data format:", data);
+      return [];
+    }
+
+    return timeline.map((tweet: any) => {
+      const user = tweet.user_info || {};
+      const timeAgo = getTimeAgo(new Date(tweet.created_at));
+
+      return {
+        id: tweet.tweet_id,
+        text: tweet.text,
+        authorName: user.name,
+        authorUsername: user.screen_name,
+        authorProfileImage: user.profile_image_url,
+        createdAt: timeAgo,
+        url: `https://twitter.com/${user.screen_name}/status/${tweet.tweet_id}`,
+        source: tweet.source,
+        replies: tweet.replies || 0,
+        retweets: tweet.retweets || 0,
+        favorites: tweet.favorites || 0,
+        views: tweet.views || 0,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching X results:", error);
     return [];
   }
 }
