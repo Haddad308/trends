@@ -1,9 +1,9 @@
+import { RawTweet } from "@/app/types";
 import { type NextRequest, NextResponse } from "next/server";
 
 const RedditLimit = Math.floor(Math.random() * (20 - 10 + 1)) + 10; // Reddit API limit for search results
 const YouTubeLimit = Math.floor(Math.random() * (20 - 10 + 1)) + 10; // YouTube API limit for search results
 const GoogleLimit = Math.floor(Math.random() * (10 - 5 + 1)) + 5; // Google API limit for search results
-const XLimit = Math.floor(Math.random() * (10 - 5 + 1)) + 5; // Instagram result limit (mock/scraped/custom API)
 
 // This implementation uses real APIs to fetch actual content
 export async function GET(request: NextRequest) {
@@ -434,18 +434,17 @@ async function fetchXResults(query: string) {
       return [];
     }
 
-    return timeline.map((tweet: any) => {
-      const user = tweet.user_info || {};
+    return timeline.map((tweet: RawTweet) => {
       const timeAgo = getTimeAgo(new Date(tweet.created_at));
 
       return {
         id: tweet.tweet_id,
         text: tweet.text,
-        authorName: user.name,
-        authorUsername: user.screen_name,
-        authorProfileImage: user.profile_image_url,
+        authorName: tweet.user_info.name,
+        authorUsername: tweet.user_info.screen_name,
+        authorProfileImage: tweet.user_info.profile_image_url,
         createdAt: timeAgo,
-        url: `https://twitter.com/${user.screen_name}/status/${tweet.tweet_id}`,
+        url: `https://twitter.com/${tweet.user_info.screen_name}/status/${tweet.tweet_id}`,
         source: tweet.source,
         replies: tweet.replies || 0,
         retweets: tweet.retweets || 0,
