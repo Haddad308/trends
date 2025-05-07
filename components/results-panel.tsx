@@ -185,8 +185,8 @@ export function ResultsPanel({
         }}
         className="flex-1 flex flex-col"
       >
-        <div className="px-4 pt-4 flex justify-center mb-4 md:mb-0">
-          <TabsList className="grid grid-cols-3 md:grid-cols-6 bg-slate-900">
+        <div className="px-4 pt-4 flex justify-center">
+          <TabsList className="grid grid-cols-3 md:grid-cols-6 bg-slate-900 !h-fit">
             <TabsTrigger
               value="all"
               className="data-[state=active]:bg-slate-800"
