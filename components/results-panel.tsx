@@ -32,7 +32,6 @@ import { XResultCard } from "./cards/XResultCard";
 import { InstagramUserCard } from "./cards/instagram/InstagramUserCard";
 import { InstagramHashtagCard } from "./cards/instagram/InstagramHashtagCard";
 import { InstagramPlaceCard } from "./cards/instagram/InstagramPlaceCard";
-import { cn } from "@/lib/utils";
 
 interface ResultsPanelProps {
   results: {
@@ -143,11 +142,17 @@ export function ResultsPanel({
               <MessageCircle className="h-3 w-3 mr-1" />
               {results.reddit.length}
             </Badge>
-            <Badge variant="outline" className="bg-slate-900 border-black">
+            <Badge
+              variant="outline"
+              className="bg-slate-900 border-black text-slate-400"
+            >
               <TwitterIcon className="h-3 w-3 mr-1" />
               {results.x.length}
             </Badge>
-            <Badge variant="outline" className="bg-pink-950/95 border-pink-900">
+            <Badge
+              variant="outline"
+              className="bg-pink-950/95 border-pink-900 text-pink-400"
+            >
               <InstagramIcon className="h-3 w-3 mr-1" />
               {results.instagram.users.length +
                 results.instagram.hashtags.length +
@@ -180,58 +185,48 @@ export function ResultsPanel({
         }}
         className="flex-1 flex flex-col"
       >
-        <div className="px-4 pt-4 flex justify-center">
-          <TabsList className="grid grid-cols-3 md:grid-cols-6 bg-slate-900 !h-fit">
-            {[
-              { value: "all", label: "All Results", bg: "bg-slate-800" },
-              {
-                value: "google",
-                label: "Google",
-                icon: <Globe className="h-4 w-4" />,
-                bg: "bg-blue-900/30",
-                text: "text-blue-300",
-              },
-              {
-                value: "youtube",
-                label: "YouTube",
-                icon: <Youtube className="h-4 w-4" />,
-                bg: "bg-red-900/30",
-                text: "text-red-300",
-              },
-              {
-                value: "reddit",
-                label: "Reddit",
-                icon: <MessageCircle className="h-4 w-4" />,
-                bg: "bg-orange-900/30",
-                text: "text-orange-300",
-              },
-              {
-                value: "x",
-                label: "X",
-                icon: <LucideTwitter className="h-4 w-4" />,
-                bg: "bg-slate-950/90",
-              },
-              {
-                value: "instagram",
-                label: "Instagram",
-                icon: <InstagramIcon className="h-4 w-4" />,
-                bg: "bg-pink-950/90",
-                text: "text-pink-300",
-              },
-            ].map(({ value, label, icon, bg = "", text = "" }) => (
-              <TabsTrigger
-                key={value}
-                value={value}
-                className={cn(
-                  "flex items-center justify-center gap-2 w-full h-full data-[state=active]:text-white",
-                  bg && `data-[state=active]:${bg}`,
-                  text && `data-[state=active]:${text}`
-                )}
-              >
-                {icon}
-                {label}
-              </TabsTrigger>
-            ))}
+        <div className="px-4 pt-4 flex justify-center mb-4 md:mb-0">
+          <TabsList className="grid grid-cols-3 md:grid-cols-6 bg-slate-900">
+            <TabsTrigger
+              value="all"
+              className="data-[state=active]:bg-slate-800"
+            >
+              All Results
+            </TabsTrigger>
+            <TabsTrigger
+              value="google"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-300"
+            >
+              <Globe className="h-4 w-4" />
+              Google
+            </TabsTrigger>
+            <TabsTrigger
+              value="youtube"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-red-900/30 data-[state=active]:text-red-300"
+            >
+              <Youtube className="h-4 w-4" />
+              YouTube
+            </TabsTrigger>
+            <TabsTrigger
+              value="reddit"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-orange-900/30 data-[state=active]:text-orange-300"
+            >
+              <MessageCircle className="h-4 w-4" />
+              Reddit
+            </TabsTrigger>
+            <TabsTrigger
+              value="x"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-slate-950/90"
+            >
+              <LucideTwitter className="h-4 w-4" />X
+            </TabsTrigger>
+            <TabsTrigger
+              value="instagram"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-pink-950/90 data-[state=active]:text-pink-300"
+            >
+              <InstagramIcon className="h-4 w-4" />
+              Instagram
+            </TabsTrigger>
           </TabsList>
         </div>
 
