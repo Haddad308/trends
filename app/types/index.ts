@@ -1,3 +1,11 @@
+export type SearchTab =
+  | "all"
+  | "google"
+  | "youtube"
+  | "reddit"
+  | "x"
+  | "instagram";
+
 export interface GoogleResult {
   title: string;
   content: string;
@@ -34,6 +42,7 @@ export interface RedditResult {
   createdAt: string;
 }
 
+// Raw types from X API
 export interface RawTweet {
   tweet_id: string;
   text: string;
@@ -50,7 +59,7 @@ export interface RawTweet {
   };
 }
 
-export interface XResults {
+export interface XResult {
   id: string;
   text: string;
   authorName: string;
@@ -63,4 +72,73 @@ export interface XResults {
   retweets: number;
   favorites: number;
   views: number;
+}
+
+// Raw types from Instagram API
+interface InstagramUserRaw {
+  position: number;
+  user: {
+    id: string;
+    pk: string;
+    username: string;
+    full_name: string;
+    is_verified: boolean;
+    profile_pic_url: string;
+  };
+}
+
+interface InstagramHashtagRaw {
+  position: number;
+  hashtag: {
+    name: string;
+    media_count: number;
+    id: string;
+  };
+}
+
+interface InstagramPlaceRaw {
+  position: number;
+  place: {
+    title: string;
+    subtitle: string;
+    location: {
+      pk: number;
+      name: string;
+      facebook_places_id: number;
+    };
+  };
+}
+
+export interface InstagramSearchResponse {
+  users: InstagramUserRaw[];
+  hashtags: InstagramHashtagRaw[];
+  places: InstagramPlaceRaw[];
+}
+
+// Processed types for easier use in the app
+export interface InstagramUser {
+  id: string;
+  username: string;
+  fullName: string;
+  isVerified: boolean;
+  profilePicUrl: string;
+}
+
+export interface InstagramHashtag {
+  id: string;
+  name: string;
+  mediaCount: number;
+}
+
+export interface InstagramPlace {
+  id: string;
+  title: string;
+  subtitle: string;
+  locationName: string;
+}
+
+export interface InstagramResult {
+  users: InstagramUser[];
+  places: InstagramPlace[];
+  hashtags: InstagramHashtag[];
 }

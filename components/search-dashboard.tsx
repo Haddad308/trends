@@ -22,11 +22,13 @@ export function SearchDashboard() {
     youtube: any[];
     reddit: any[];
     x: any[];
+    instagram: any;
   }>({
     google: [],
     youtube: [],
     reddit: [],
     x: [],
+    instagram: {},
   });
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -34,7 +36,13 @@ export function SearchDashboard() {
   useEffect(() => {
     const fetchResults = async () => {
       if (debouncedSearchTerm.length < 3) {
-        setResults({ google: [], youtube: [], reddit: [], x: [] });
+        setResults({
+          google: [],
+          youtube: [],
+          reddit: [],
+          x: [],
+          instagram: [],
+        });
         return;
       }
 

@@ -4,10 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import Image from "next/image";
-import { XResults } from "@/app/types";
+import { XResult } from "@/app/types";
 
 interface XResultProps {
-  tweet: XResults;
+  tweet: XResult;
 }
 
 export function XResultCard({ tweet }: XResultProps) {

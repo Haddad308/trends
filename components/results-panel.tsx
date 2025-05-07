@@ -14,25 +14,33 @@ import {
   Search,
   LucideTwitter,
   TwitterIcon,
+  InstagramIcon,
 } from "lucide-react";
 import { GoogleResultCard } from "@/components/google-result-card";
 import { YoutubeResultCard } from "@/components/youtube-result-card";
 import { RedditResultCard } from "@/components/reddit-result-card";
 import {
   GoogleResult,
+  InstagramResult,
   RedditResult,
-  XResults,
+  SearchTab,
+  XResult,
   YoutubeResult,
 } from "@/app/types";
 import { PaginationNavigation } from "./PaginationNavigation";
-import { XResultCard } from "./xResultCard";
+import { XResultCard } from "./cards/XResultCard";
+import { InstagramUserCard } from "./cards/instagram/InstagramUserCard";
+import { InstagramHashtagCard } from "./cards/instagram/InstagramHashtagCard";
+import { InstagramPlaceCard } from "./cards/instagram/InstagramPlaceCard";
+import { cn } from "@/lib/utils";
 
 interface ResultsPanelProps {
   results: {
     google: GoogleResult[];
     youtube: YoutubeResult[];
     reddit: RedditResult[];
-    x: XResults[];
+    x: XResult[];
+    instagram: InstagramResult;
   };
   searchTerm: string;
   isLoading: boolean;
@@ -45,9 +53,7 @@ export function ResultsPanel({
   isLoading,
   onRelatedSearchClick,
 }: ResultsPanelProps) {
-  const [activeTab, setActiveTab] = useState<
-    "all" | "google" | "youtube" | "reddit" | "x"
-  >("all");
+  const [activeTab, setActiveTab] = useState<SearchTab>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -141,6 +147,12 @@ export function ResultsPanel({
               <TwitterIcon className="h-3 w-3 mr-1" />
               {results.x.length}
             </Badge>
+            <Badge variant="outline" className="bg-pink-950/95 border-pink-900">
+              <InstagramIcon className="h-3 w-3 mr-1" />
+              {results.instagram.users.length +
+                results.instagram.hashtags.length +
+                results.instagram.places.length}
+            </Badge>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -162,47 +174,64 @@ export function ResultsPanel({
       <Tabs
         value={activeTab}
         onValueChange={(value: string) => {
-          const tab = value as "all" | "google" | "youtube" | "reddit";
+          const tab = value as SearchTab;
           setActiveTab(tab);
           setCurrentPage(1);
         }}
         className="flex-1 flex flex-col"
       >
-        <div className="px-4 pt-4">
-          <TabsList className="grid grid-cols-5 bg-slate-900">
-            <TabsTrigger
-              value="all"
-              className="data-[state=active]:bg-slate-800"
-            >
-              All Results
-            </TabsTrigger>
-            <TabsTrigger
-              value="google"
-              className="flex items-center justify-center gap-2 data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-300"
-            >
-              <Globe className="h-4 w-4" />
-              Google
-            </TabsTrigger>
-            <TabsTrigger
-              value="youtube"
-              className="flex items-center justify-center gap-2 data-[state=active]:bg-red-900/30 data-[state=active]:text-red-300"
-            >
-              <Youtube className="h-4 w-4" />
-              YouTube
-            </TabsTrigger>
-            <TabsTrigger
-              value="reddit"
-              className="flex items-center justify-center gap-2 data-[state=active]:bg-orange-900/30 data-[state=active]:text-orange-300"
-            >
-              <MessageCircle className="h-4 w-4" />
-              Reddit
-            </TabsTrigger>
-            <TabsTrigger
-              value="x"
-              className="flex items-center justify-center gap-2 data-[state=active]:bg-slate-950/90"
-            >
-              <LucideTwitter className="h-4 w-4" />X
-            </TabsTrigger>
+        <div className="px-4 pt-4 flex justify-center">
+          <TabsList className="grid grid-cols-3 md:grid-cols-6 bg-slate-900 !h-fit">
+            {[
+              { value: "all", label: "All Results", bg: "bg-slate-800" },
+              {
+                value: "google",
+                label: "Google",
+                icon: <Globe className="h-4 w-4" />,
+                bg: "bg-blue-900/30",
+                text: "text-blue-300",
+              },
+              {
+                value: "youtube",
+                label: "YouTube",
+                icon: <Youtube className="h-4 w-4" />,
+                bg: "bg-red-900/30",
+                text: "text-red-300",
+              },
+              {
+                value: "reddit",
+                label: "Reddit",
+                icon: <MessageCircle className="h-4 w-4" />,
+                bg: "bg-orange-900/30",
+                text: "text-orange-300",
+              },
+              {
+                value: "x",
+                label: "X",
+                icon: <LucideTwitter className="h-4 w-4" />,
+                bg: "bg-slate-950/90",
+              },
+              {
+                value: "instagram",
+                label: "Instagram",
+                icon: <InstagramIcon className="h-4 w-4" />,
+                bg: "bg-pink-950/90",
+                text: "text-pink-300",
+              },
+            ].map(({ value, label, icon, bg = "", text = "" }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className={cn(
+                  "flex items-center justify-center gap-2 w-full h-full data-[state=active]:text-white",
+                  bg && `data-[state=active]:${bg}`,
+                  text && `data-[state=active]:${text}`
+                )}
+              >
+                {icon}
+                {label}
+              </TabsTrigger>
+            ))}
           </TabsList>
         </div>
 
@@ -331,6 +360,7 @@ export function ResultsPanel({
               )}
             </div>
           </TabsContent>
+
           <TabsContent value="x" className="h-full mt-0">
             <div className="grid grid-cols-1 gap-4">
               {results.x
@@ -348,15 +378,105 @@ export function ResultsPanel({
               )}
             </div>
           </TabsContent>
+
+          <TabsContent value="instagram" className="h-full mt-0">
+            <div className="grid grid-cols-1 gap-4">
+              {results.instagram.hashtags.slice(
+                (currentPage - 1) * itemsPerPage,
+                currentPage * itemsPerPage
+              ).length > 0 && (
+                <h3 className="text-lg font-semibold text-blue-300">
+                  Hastags Related to your search
+                </h3>
+              )}
+              {results.instagram.hashtags
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((hashtag, index) => (
+                  <InstagramHashtagCard
+                    key={`instagram-hashtag-tab-${index}`}
+                    hashtag={hashtag}
+                  />
+                ))}
+              {results.instagram.users.slice(
+                (currentPage - 1) * itemsPerPage,
+                currentPage * itemsPerPage
+              ).length > 0 && (
+                <h3 className="text-lg font-semibold text-blue-300">
+                  Users Related to your search
+                </h3>
+              )}
+              {results.instagram.users
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((user, index) => (
+                  <InstagramUserCard
+                    key={`instagram-user-tab-${index}`}
+                    user={user}
+                  />
+                ))}
+              {results.instagram.places.slice(
+                (currentPage - 1) * itemsPerPage,
+                currentPage * itemsPerPage
+              ).length > 0 && (
+                <h3 className="text-lg font-semibold text-blue-300">
+                  Places Related to your search
+                </h3>
+              )}
+              {results.instagram.places
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((place, index) => (
+                  <InstagramPlaceCard
+                    key={`instagram-place-tab-${index}`}
+                    place={place}
+                  />
+                ))}
+              {results.instagram.users.length +
+                results.instagram.hashtags.length +
+                results.instagram.places.length ===
+                0 && (
+                <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
+                  <p className="text-slate-400">
+                    No Instagram results to display
+                  </p>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
         </div>
-        {activeTab !== "all" && results[activeTab].length > 5 && (
-          <PaginationNavigation
-            currentPage={currentPage}
-            totalItems={results[activeTab].length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={(page) => setCurrentPage(page)}
-          />
-        )}
+        {activeTab !== "all" &&
+          activeTab !== "instagram" &&
+          results[activeTab].length > 5 && (
+            <PaginationNavigation
+              currentPage={currentPage}
+              totalItems={results[activeTab].length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
+          )}
+        {activeTab === "instagram" &&
+          results[activeTab].users.length +
+            results[activeTab].hashtags.length +
+            results[activeTab].places.length >
+            5 && (
+            <PaginationNavigation
+              currentPage={currentPage}
+              totalItems={
+                results[activeTab].users.length +
+                results[activeTab].hashtags.length +
+                results[activeTab].places.length
+              }
+              itemsPerPage={itemsPerPage}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
+          )}
       </Tabs>
     </div>
   );

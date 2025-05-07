@@ -1,4 +1,10 @@
-import { RawTweet } from "@/app/types";
+import {
+  InstagramHashtag,
+  InstagramPlace,
+  InstagramSearchResponse,
+  InstagramUser,
+  RawTweet,
+} from "@/app/types";
 import { type NextRequest, NextResponse } from "next/server";
 
 const RedditLimit = Math.floor(Math.random() * (20 - 10 + 1)) + 10; // Reddit API limit for search results
@@ -19,31 +25,41 @@ export async function GET(request: NextRequest) {
 
   try {
     // Fetch data from all platforms in parallel with individual error handling
-    const [youtubeResults, redditResults, googleResults, xResults] =
-      await Promise.all([
-        fetchYouTubeResults(query).catch((error) => {
-          console.error("YouTube search error:", error);
-          return [];
-        }),
-        fetchRedditResults(query).catch((error) => {
-          console.error("Reddit search error:", error);
-          return getMockRedditResults(query);
-        }),
-        fetchGoogleAlternativeResults(query).catch((error) => {
-          console.error("Google search error:", error);
-          return [];
-        }),
-        fetchXResults(query).catch((error) => {
-          console.error("Instagram search error:", error);
-          return [];
-        }),
-      ]);
+    const [
+      youtubeResults,
+      redditResults,
+      googleResults,
+      xResults,
+      instagramResults,
+    ] = await Promise.all([
+      fetchYouTubeResults(query).catch((error) => {
+        console.error("YouTube search error:", error);
+        return [];
+      }),
+      fetchRedditResults(query).catch((error) => {
+        console.error("Reddit search error:", error);
+        return getMockRedditResults(query);
+      }),
+      fetchGoogleAlternativeResults(query).catch((error) => {
+        console.error("Google search error:", error);
+        return [];
+      }),
+      fetchXResults(query).catch((error) => {
+        console.error("X search error:", error);
+        return [];
+      }),
+      fetchInstagramResults(query).catch((error) => {
+        console.error("Instagram search error:", error);
+        return [];
+      }),
+    ]);
 
     return NextResponse.json({
       youtube: youtubeResults,
       reddit: redditResults,
       google: googleResults,
       x: xResults,
+      instagram: instagramResults,
     });
   } catch (error) {
     console.error("Error fetching search results:", error);
@@ -458,7 +474,50 @@ async function fetchXResults(query: string) {
   }
 }
 
+// For Instagram, we'll use a mock function to simulate results
+async function fetchInstagramResults(query: string) {
+  const res = await fetch(
+    `https://instagram-looter2.p.rapidapi.com/search?query=${query}&limit=20`,
+    {
+      headers: {
+        "x-rapidapi-host": process.env.INSTAGRAM_RAPIDAPI_HOST || "",
+        "x-rapidapi-key": process.env.X_RAPIDAPI_KEY || "",
+      },
+    }
+  );
+
+  if (!res.ok) throw new Error("Failed to fetch Instagram data");
+
+  const data = await res.json();
+  return mapInstagramResponse(data);
+}
+
 // Helper functions
+function mapInstagramResponse(data: InstagramSearchResponse) {
+  const users: InstagramUser[] = data.users.map(({ user }) => ({
+    id: user.id,
+    username: user.username,
+    fullName: user.full_name,
+    isVerified: user.is_verified,
+    profilePicUrl: user.profile_pic_url,
+  }));
+
+  const hashtags: InstagramHashtag[] = data.hashtags.map(({ hashtag }) => ({
+    id: hashtag.id.toString(),
+    name: hashtag.name,
+    mediaCount: hashtag.media_count,
+  }));
+
+  const places: InstagramPlace[] = data.places.map(({ place }) => ({
+    id: place.location.pk.toString(),
+    title: place.title,
+    subtitle: place.subtitle,
+    locationName: place.location.name,
+  }));
+
+  return { users, hashtags, places };
+}
+
 function parseDuration(duration: string): string {
   // Parse ISO 8601 duration format (PT1H2M3S)
   const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
