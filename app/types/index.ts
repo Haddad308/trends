@@ -1,10 +1,10 @@
 export type SearchTab =
-  | "all"
   | "google"
   | "youtube"
   | "reddit"
   | "x"
-  | "instagram";
+  | "instagram"
+  | "tiktok";
 
 export interface GoogleResult {
   title: string;
@@ -141,4 +141,75 @@ export interface InstagramResult {
   users: InstagramUser[];
   places: InstagramPlace[];
   hashtags: InstagramHashtag[];
+}
+
+// Raw types from TikTok API
+interface TikTokUserRaw {
+  id: string;
+  nickname: string;
+  uniqueId: string;
+  signature: string;
+  verified: boolean;
+  avatarLarger: string;
+  followerCount: number;
+  followingCount: number;
+  videoCount: number;
+  heart: number;
+}
+
+interface TikTokVideoRaw {
+  id: string;
+  desc: string;
+  videoUrl: string;
+  cover: string;
+  duration: number;
+  createTime: number;
+  stats: {
+    playCount: number;
+    commentCount: number;
+    likeCount: number;
+    shareCount: number;
+  };
+  author: {
+    id: string;
+    uniqueId: string;
+    nickname: string;
+    avatarThumb: string;
+  };
+}
+
+export interface TikTokSearchResponse {
+  users: TikTokUserRaw[];
+  videos: TikTokVideoRaw[];
+}
+
+// Mapped types for the app
+export interface TikTokUser {
+  id: string;
+  nickname: string;
+  username: string;
+  avatar: string;
+  isVerified: boolean;
+  followers: number;
+}
+
+export interface TikTokVideo {
+  id: string;
+  description: string;
+  url: string;
+  thumbnail: string;
+  duration: string;
+  publishedAt: string;
+  viewCount: number;
+  likeCount: number;
+  author: {
+    id: string;
+    nickname: string;
+    avatar: string;
+  };
+}
+
+export interface TikTokResult {
+  users: TikTokUser[];
+  videos: TikTokVideo[];
 }

@@ -4,6 +4,10 @@ import {
   InstagramSearchResponse,
   InstagramUser,
   RawTweet,
+  TikTokResult,
+  TikTokSearchResponse,
+  TikTokUser,
+  TikTokVideo,
 } from "@/app/types";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -31,6 +35,7 @@ export async function GET(request: NextRequest) {
       googleResults,
       xResults,
       instagramResults,
+      TikTokResults,
     ] = await Promise.all([
       fetchYouTubeResults(query).catch((error) => {
         console.error("YouTube search error:", error);
@@ -50,7 +55,11 @@ export async function GET(request: NextRequest) {
       }),
       fetchInstagramResults(query).catch((error) => {
         console.error("Instagram search error:", error);
-        return [];
+        return { users: [], hashtags: [], places: [] };
+      }),
+      fetchTikTokResults(query).catch((error) => {
+        console.error("TikTok search error:", error);
+        return { users: [], videos: [] };
       }),
     ]);
 
@@ -60,6 +69,7 @@ export async function GET(request: NextRequest) {
       google: googleResults,
       x: xResults,
       instagram: instagramResults,
+      tiktok: TikTokResults,
     });
   } catch (error) {
     console.error("Error fetching search results:", error);
@@ -69,6 +79,8 @@ export async function GET(request: NextRequest) {
       reddit: getMockRedditResults(query),
       google: [],
       x: [],
+      instagram: { users: [], hashtags: [], places: [] },
+      tiktok: { users: [], videos: [] },
       error: "Some search results could not be fetched",
     });
   }
@@ -477,7 +489,7 @@ async function fetchXResults(query: string) {
 // For Instagram, we'll use a mock function to simulate results
 async function fetchInstagramResults(query: string) {
   const res = await fetch(
-    `https://instagram-looter2.p.rapidapi.com/search?query=${query}&limit=20`,
+    `https://instagram-looter2.p.rapidapi.com/search?query=${query}`,
     {
       headers: {
         "x-rapidapi-host": process.env.INSTAGRAM_RAPIDAPI_HOST || "",
@@ -489,10 +501,69 @@ async function fetchInstagramResults(query: string) {
   if (!res.ok) throw new Error("Failed to fetch Instagram data");
 
   const data = await res.json();
-  return mapInstagramResponse(data);
+  const mappedResponse = mapInstagramResponse(data);
+
+  return {
+    users: mappedResponse.users.slice(0, 5),
+    hashtags: mappedResponse.hashtags.slice(0, 10),
+    places: mappedResponse.places.slice(0, 5),
+  };
+}
+
+// TikTok search API integration
+export async function fetchTikTokResults(query: string): Promise<TikTokResult> {
+  const res = await fetch(
+    `https://tiktok-api23.p.rapidapi.com/api/search/general?keyword=${query}&count=20`,
+    {
+      headers: {
+        "x-rapidapi-host": process.env.TIKTOK_RAPIDAPI_HOST || "",
+        "x-rapidapi-key": process.env.X_RAPIDAPI_KEY || "",
+      },
+    }
+  );
+
+  if (!res.ok) throw new Error("Failed to fetch TikTok data");
+
+  const data: TikTokSearchResponse = await res.json();
+  const mappedResponse = mapTikTokResponse(data);
+  return {
+    users: mappedResponse.users.slice(0, 10),
+    videos: mappedResponse.videos.slice(0, 10),
+  };
 }
 
 // Helper functions
+function mapTikTokResponse(data: TikTokSearchResponse): TikTokResult {
+  const users: TikTokUser[] = data.users.map((user) => ({
+    id: user.id,
+    nickname: user.nickname,
+    username: user.uniqueId,
+    avatar: user.avatarLarger,
+    isVerified: user.verified,
+    followers: user.followerCount,
+  }));
+
+  const videos: TikTokVideo[] = data.videos.map((video) => ({
+    id: video.id,
+    description: video.desc,
+    url: video.videoUrl,
+    thumbnail: video.cover,
+    duration: `${Math.floor(video.duration / 60)}:${(video.duration % 60)
+      .toString()
+      .padStart(2, "0")}`,
+    publishedAt: new Date(video.createTime * 1000).toLocaleDateString(),
+    viewCount: video.stats.playCount,
+    likeCount: video.stats.likeCount,
+    author: {
+      id: video.author.id,
+      nickname: video.author.nickname,
+      avatar: video.author.avatarThumb,
+    },
+  }));
+
+  return { users, videos };
+}
+
 function mapInstagramResponse(data: InstagramSearchResponse) {
   const users: InstagramUser[] = data.users.map(({ user }) => ({
     id: user.id,
