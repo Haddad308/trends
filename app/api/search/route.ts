@@ -511,7 +511,7 @@ async function fetchInstagramResults(query: string) {
 }
 
 // TikTok search API integration
-export async function fetchTikTokResults(query: string): Promise<TikTokResult> {
+async function fetchTikTokResults(query: string): Promise<TikTokResult> {
   const res = await fetch(
     `https://tiktok-api23.p.rapidapi.com/api/search/general?keyword=${query}&count=20`,
     {

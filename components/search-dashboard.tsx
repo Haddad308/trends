@@ -29,8 +29,8 @@ export function SearchDashboard() {
     youtube: [],
     reddit: [],
     x: [],
-    instagram: {},
-    tiktok: {},
+    instagram: { hashtags: [], users: [], places: [] },
+    tiktok: { users: [], videos: [] },
   });
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -43,8 +43,8 @@ export function SearchDashboard() {
           youtube: [],
           reddit: [],
           x: [],
-          instagram: {},
-          tiktok: {},
+          instagram: { hashtags: [], users: [], places: [] },
+          tiktok: { users: [], videos: [] },
         });
         return;
       }
