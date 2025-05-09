@@ -4,10 +4,8 @@ import {
   InstagramSearchResponse,
   InstagramUser,
   RawTweet,
-  TikTokResult,
-  TikTokSearchResponse,
-  TikTokUser,
-  TikTokVideo,
+  TikTokMappedItem,
+  TikTokRawEntry,
 } from "@/app/types";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -59,7 +57,7 @@ export async function GET(request: NextRequest) {
       }),
       fetchTikTokResults(query).catch((error) => {
         console.error("TikTok search error:", error);
-        return { users: [], videos: [] };
+        return [];
       }),
     ]);
 
@@ -511,7 +509,7 @@ async function fetchInstagramResults(query: string) {
 }
 
 // TikTok search API integration
-async function fetchTikTokResults(query: string): Promise<TikTokResult> {
+async function fetchTikTokResults(query: string) {
   const res = await fetch(
     `https://tiktok-api23.p.rapidapi.com/api/search/general?keyword=${query}&count=20`,
     {
@@ -524,44 +522,46 @@ async function fetchTikTokResults(query: string): Promise<TikTokResult> {
 
   if (!res.ok) throw new Error("Failed to fetch TikTok data");
 
-  const data: TikTokSearchResponse = await res.json();
-  const mappedResponse = mapTikTokResponse(data);
-  return {
-    users: mappedResponse.users.slice(0, 10),
-    videos: mappedResponse.videos.slice(0, 10),
-  };
+  const data = await res.json();
+  return mapTikTokResponse(data);
 }
 
 // Helper functions
-function mapTikTokResponse(data: TikTokSearchResponse): TikTokResult {
-  const users: TikTokUser[] = data.users.map((user) => ({
-    id: user.id,
-    nickname: user.nickname,
-    username: user.uniqueId,
-    avatar: user.avatarLarger,
-    isVerified: user.verified,
-    followers: user.followerCount,
-  }));
+function mapTikTokResponse(rawData: { data: TikTokRawEntry[] }) {
+  const results: TikTokMappedItem[] = [];
 
-  const videos: TikTokVideo[] = data.videos.map((video) => ({
-    id: video.id,
-    description: video.desc,
-    url: video.videoUrl,
-    thumbnail: video.cover,
-    duration: `${Math.floor(video.duration / 60)}:${(video.duration % 60)
-      .toString()
-      .padStart(2, "0")}`,
-    publishedAt: new Date(video.createTime * 1000).toLocaleDateString(),
-    viewCount: video.stats.playCount,
-    likeCount: video.stats.likeCount,
-    author: {
-      id: video.author.id,
-      nickname: video.author.nickname,
-      avatar: video.author.avatarThumb,
-    },
-  }));
+  rawData?.data?.forEach((entry: TikTokRawEntry) => {
+    if (entry.type === 1 && "item" in entry && entry.item?.video) {
+      results.push({
+        type: "video",
+        id: entry.item.id,
+        description: entry.item.desc,
+        createTime: entry.item.createTime,
+        cover: entry.item.video.cover,
+        playUrl: entry.item.video.playAddr,
+        duration: entry.item.video.duration,
+        width: entry.item.video.width,
+        height: entry.item.video.height,
+      });
+    }
 
-  return { users, videos };
+    if (entry.type === 4 && "user_list" in entry) {
+      entry.user_list.forEach((userEntry) => {
+        const user = userEntry.user_info;
+        results.push({
+          type: "user",
+          id: user.uid,
+          uniqueId: user.unique_id,
+          nickname: user.nickname,
+          avatar: user.avatar_thumb?.url_list?.[0] ?? "",
+          signature: user.signature,
+          followerCount: user.follower_count,
+        });
+      });
+    }
+  });
+
+  return results;
 }
 
 function mapInstagramResponse(data: InstagramSearchResponse) {

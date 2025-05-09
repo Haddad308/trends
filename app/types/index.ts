@@ -143,73 +143,60 @@ export interface InstagramResult {
   hashtags: InstagramHashtag[];
 }
 
-// Raw types from TikTok API
-interface TikTokUserRaw {
-  id: string;
-  nickname: string;
-  uniqueId: string;
-  signature: string;
-  verified: boolean;
-  avatarLarger: string;
-  followerCount: number;
-  followingCount: number;
-  videoCount: number;
-  heart: number;
-}
-
-interface TikTokVideoRaw {
-  id: string;
-  desc: string;
-  videoUrl: string;
-  cover: string;
-  duration: number;
-  createTime: number;
-  stats: {
-    playCount: number;
-    commentCount: number;
-    likeCount: number;
-    shareCount: number;
-  };
-  author: {
+export type TikTokRawVideoEntry = {
+  type: 1;
+  item: {
     id: string;
-    uniqueId: string;
-    nickname: string;
-    avatarThumb: string;
+    desc: string;
+    createTime: number;
+    video: {
+      cover: string;
+      playAddr: string;
+      duration: number;
+      width: number;
+      height: number;
+    };
   };
-}
+};
 
-export interface TikTokSearchResponse {
-  users: TikTokUserRaw[];
-  videos: TikTokVideoRaw[];
-}
+export type TikTokRawUserEntry = {
+  type: 4;
+  user_list: {
+    user_info: {
+      uid: string;
+      nickname: string;
+      signature: string;
+      avatar_thumb: {
+        url_list: string[];
+      };
+      unique_id: string;
+      follower_count: number;
+    };
+  }[];
+};
 
-// Mapped types for the app
-export interface TikTokUser {
-  id: string;
-  nickname: string;
-  username: string;
-  avatar: string;
-  isVerified: boolean;
-  followers: number;
-}
+export type TikTokRawEntry = TikTokRawVideoEntry | TikTokRawUserEntry;
 
-export interface TikTokVideo {
+export type TikTokVideo = {
+  type: "video";
   id: string;
   description: string;
-  url: string;
-  thumbnail: string;
-  duration: string;
-  publishedAt: string;
-  viewCount: number;
-  likeCount: number;
-  author: {
-    id: string;
-    nickname: string;
-    avatar: string;
-  };
-}
+  createTime: number;
+  cover: string;
+  playUrl: string;
+  duration: number;
+  width: number;
+  height: number;
+};
 
-export interface TikTokResult {
-  users: TikTokUser[];
-  videos: TikTokVideo[];
-}
+export type TikTokUser = {
+  type: "user";
+  id: string;
+  uniqueId: string;
+  nickname: string;
+  avatar: string;
+  signature: string;
+  followerCount: number;
+};
+
+export type TikTokMappedItem = TikTokVideo | TikTokUser;

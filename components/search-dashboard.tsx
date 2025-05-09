@@ -23,14 +23,14 @@ export function SearchDashboard() {
     reddit: any[];
     x: any[];
     instagram: any;
-    tiktok: any;
+    tiktok: any[];
   }>({
     google: [],
     youtube: [],
     reddit: [],
     x: [],
     instagram: { hashtags: [], users: [], places: [] },
-    tiktok: { users: [], videos: [] },
+    tiktok: [],
   });
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -44,7 +44,7 @@ export function SearchDashboard() {
           reddit: [],
           x: [],
           instagram: { hashtags: [], users: [], places: [] },
-          tiktok: { users: [], videos: [] },
+          tiktok: [],
         });
         return;
       }

@@ -27,8 +27,7 @@ import {
   InstagramUser,
   RedditResult,
   SearchTab,
-  TikTokResult,
-  TikTokVideo,
+  TikTokMappedItem,
   XResult,
   YoutubeResult,
 } from "@/app/types";
@@ -38,7 +37,7 @@ import { InstagramUserCard } from "./cards/instagram/InstagramUserCard";
 import { InstagramHashtagCard } from "./cards/instagram/InstagramHashtagCard";
 import { InstagramPlaceCard } from "./cards/instagram/InstagramPlaceCard";
 import TiktokIcon from "./icons/TiktokIcon";
-import { TikTokResultCard } from "./cards/TiktokResultCard";
+import TikTokResultCard from "./cards/TiktokResultCard";
 
 interface ResultsPanelProps {
   results: {
@@ -47,7 +46,7 @@ interface ResultsPanelProps {
     reddit: RedditResult[];
     x: XResult[];
     instagram: InstagramResult;
-    tiktok: TikTokResult; // Replace with actual type if available
+    tiktok: TikTokMappedItem[]; // Replace with actual type if available
   };
   searchTerm: string;
   isLoading: boolean;
@@ -118,31 +117,15 @@ export function ResultsPanel({
     })),
   ];
 
-  const allTiktokResults = [
-    ...results.tiktok.users.map((user) => ({
-      type: "user",
-      data: user,
-    })),
-    ...results.tiktok.videos.map((video) => ({
-      type: "video",
-      data: video,
-    })),
-  ];
-
   const instagramPaginatedResults = allInstagramResults.slice(
     startIndex,
     endIndex
   );
 
-  const tiktokPaginatedResults = allTiktokResults.slice(startIndex, endIndex);
-
   const instagramTotalResults =
     results.instagram.hashtags.length +
     results.instagram.users.length +
     results.instagram.places.length;
-
-  const tiktokTotalResults =
-    results.tiktok.users.length + results.tiktok.videos.length;
 
   const hasResults =
     results.google.length > 0 ||
@@ -150,7 +133,7 @@ export function ResultsPanel({
     results.reddit.length > 0 ||
     results.x.length > 0 ||
     instagramTotalResults > 0 ||
-    tiktokTotalResults > 0;
+    results.tiktok.length > 0;
 
   if (!hasResults) {
     return (
@@ -218,7 +201,7 @@ export function ResultsPanel({
               className="bg-slate-900 border-black text-slate-400"
             >
               <TiktokIcon />
-              {results.tiktok.users.length + results.tiktok.videos.length}
+              {results.tiktok.length}
             </Badge>
           </div>
         </div>
@@ -418,48 +401,34 @@ export function ResultsPanel({
 
           <TabsContent value="tiktok" className="h-full mt-0">
             <div className="grid grid-cols-1 gap-4">
-              {
-                <>
-                  {tiktokPaginatedResults.map((item, index) => (
-                    <TikTokResultCard
-                      key={`tiktok-tab-${index}`}
-                      video={item.data as TikTokVideo}
-                    />
-                  ))}
-                  {tiktokPaginatedResults.length === 0 && (
-                    <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
-                      <p className="text-slate-400">
-                        No Tiktok results to display
-                      </p>
-                    </Card>
-                  )}
-                </>
-              }
+              {results.tiktok
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <TikTokResultCard key={`x-tab-${index}`} item={result} />
+                ))}
+              {results.tiktok.length === 0 && (
+                <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
+                  <p className="text-slate-400">No Tiktok results to display</p>
+                </Card>
+              )}
             </div>
           </TabsContent>
         </div>
-        {activeTab !== "instagram" &&
-          activeTab !== "tiktok" &&
-          results[activeTab].length > 5 && (
-            <PaginationNavigation
-              currentPage={currentPage}
-              totalItems={results[activeTab].length}
-              itemsPerPage={itemsPerPage}
-              onPageChange={(page) => setCurrentPage(page)}
-            />
-          )}
-        {activeTab === "instagram" && instagramTotalResults > 5 && (
+        {activeTab !== "instagram" && results[activeTab].length > 5 && (
           <PaginationNavigation
             currentPage={currentPage}
-            totalItems={instagramTotalResults}
+            totalItems={results[activeTab].length}
             itemsPerPage={itemsPerPage}
             onPageChange={(page) => setCurrentPage(page)}
           />
         )}
-        {activeTab === "tiktok" && tiktokTotalResults > 5 && (
+        {activeTab === "instagram" && instagramTotalResults > 5 && (
           <PaginationNavigation
             currentPage={currentPage}
-            totalItems={tiktokTotalResults}
+            totalItems={instagramTotalResults}
             itemsPerPage={itemsPerPage}
             onPageChange={(page) => setCurrentPage(page)}
           />
