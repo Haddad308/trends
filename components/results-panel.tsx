@@ -63,7 +63,8 @@ export function ResultsPanel({
   const [currentPage, setCurrentPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const itemsPerPage = activeTab === "youtube" ? 6 : 5; // Number of items to display per page
+  const itemsPerPage =
+    activeTab === "youtube" ? 6 : activeTab === "instagram" ? 10 : 5; // Number of items to display per page
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
