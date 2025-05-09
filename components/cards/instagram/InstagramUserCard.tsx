@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
@@ -17,7 +15,7 @@ export function InstagramUserCard({ user }: InstagramUserCardProps) {
         <div className="flex items-start gap-3 mb-4">
           <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
             <Image
-              src={user.profilePicUrl || "/placeholder.svg?height=48&width=48"}
+              src={user.profilePicUrl}
               alt={user.fullName}
               fill
               className="object-cover"
