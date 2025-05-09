@@ -10,9 +10,13 @@ export default function TikTokCard({ item }: { item: TikTokMappedItem }) {
 
   if (item.type === "video") {
     return (
-      <Card className="overflow-hidden transition-all duration-300 border-slate-700 bg-slate-800/50 hover:bg-slate-800/80 h-full flex flex-col">
+      <Card
+        className={`${
+          showEmbed && "!h-[914px]"
+        } overflow-hidden transition-all duration-300 border-slate-700 bg-slate-800/50 hover:bg-slate-800/80 h-full flex flex-col`}
+      >
         {showEmbed ? (
-          <div className="relative w-full pt-[56.25%]">
+          <div className="relative w-full pt-[56.25%] h-[90%]">
             <iframe
               className="absolute top-0 left-0 w-full h-full"
               src={`https://www.tiktok.com/embed/${item.id}`}
@@ -33,7 +37,7 @@ export default function TikTokCard({ item }: { item: TikTokMappedItem }) {
               fill
               className="object-cover"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+            <div className="absolute inset-0 bg-transparent bg-opacity-40 flex items-center justify-center">
               <div className="w-12 h-12 rounded-full bg-pink-600 flex items-center justify-center">
                 <Play className="h-6 w-6 text-white fill-white" />
               </div>
