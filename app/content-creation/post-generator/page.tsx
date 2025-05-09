@@ -7,13 +7,15 @@ import { Card } from "@/components/ui/card";
 import { Loader2, RefreshCw, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTrendingTopics } from "@/store/useTrendingTopics";
+import { PostPlatform } from "@/app/types";
 
 const Page = () => {
   const [keyword, setKeyword] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [posts, setPosts] = useState<string[] | null>(null);
+  const [post, setPost] = useState("");
   const [error, setError] = useState("");
   const [isCopied, setIsCopied] = useState(false);
+  const [platform, setPlatform] = useState<PostPlatform>("linkedin");
 
   const { categories, featured } = useTrendingTopics();
 
@@ -30,16 +32,16 @@ const Page = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ transcriptionText: keyword }),
+        body: JSON.stringify({ transcriptionText: keyword, platform }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate posts");
+        throw new Error(errorData.error || "Failed to generate post");
       }
 
       const data = await response.json();
-      setPosts(data.content);
+      setPost(data.content);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred"
@@ -53,9 +55,23 @@ const Page = () => {
     <div className="space-y-6">
       <Card className="bg-[#151F33] border-gray-800">
         <div className="p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">
-            Generate Posts
-          </h2>
+          <div className="flex items-center mb-4">
+            <h2 className="text-xl font-semibold text-white mr-2">
+              Generate{" "}
+              {platform === "instagram" || platform === "x" ? "an" : "a"}{" "}
+            </h2>
+            <select
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value as PostPlatform)}
+              className="bg-[#1a2236] border-gray-700 text-white rounded-md px-3 py-1 text-xs md:text-sm"
+            >
+              <option value="linkedin">LinkedIn</option>
+              <option value="facebook">Facebook</option>
+              <option value="x">X</option>
+              <option value="instagram">Instagram</option>
+            </select>
+            <h2 className="text-xl font-semibold text-white ml-2">Post</h2>
+          </div>
 
           <form onSubmit={handleSubmit} className="flex gap-2">
             <div className="relative flex-1">
@@ -80,7 +96,7 @@ const Page = () => {
                   Generating
                 </>
               ) : (
-                "Generate Posts"
+                "Generate Post"
               )}
             </Button>
           </form>
@@ -142,14 +158,12 @@ const Page = () => {
         </div>
       )}
 
-      {(isGenerating || posts) && (
+      {(isGenerating || post) && (
         <Card className="bg-[#151F33] border-gray-800">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">
-                Posts Results
-              </h2>
-              {posts && (
+              <h2 className="text-xl font-semibold text-white">Post Result</h2>
+              {post && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -182,26 +196,21 @@ const Page = () => {
                   <div className="flex justify-center items-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
                     <span className="ml-3 text-gray-400">
-                      Generating Posts...
+                      Generating Post...
                     </span>
                   </div>
                 ) : (
                   <div className="relative">
-                    {posts?.map((post, index) => (
-                      <span
-                        key={index}
-                        className="inline-block bg-purple-900/20 text-purple-300 border-purple-800 rounded-full px-3 py-1 me-2 mb-2"
-                      >
-                        {post}
-                      </span>
-                    ))}
+                    <p className="bg-[#1a2236] p-4 rounded-md overflow-auto text-gray-300">
+                      {post}
+                    </p>
                     <Button
                       onClick={() => {
-                        navigator.clipboard.writeText(posts?.join("\n") || "");
+                        navigator.clipboard.writeText(post);
                         setIsCopied(true);
                         setTimeout(() => setIsCopied(false), 2000);
                       }}
-                      className="absolute -top-10 -right-3 bg-purple-600 hover:bg-purple-700"
+                      className="absolute -top-10 -right-1 bg-purple-600 hover:bg-purple-700"
                       size="sm"
                     >
                       {isCopied ? "Copied!" : "Copy"}

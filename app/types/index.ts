@@ -200,3 +200,5 @@ export type TikTokUser = {
 };
 
 export type TikTokMappedItem = TikTokVideo | TikTokUser;
+
+export type PostPlatform = "linkedin" | "facebook" | "x" | "instagram";
