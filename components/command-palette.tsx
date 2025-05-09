@@ -1,5 +1,3 @@
-"use client";
-
 import type * as React from "react";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -10,7 +8,6 @@ import {
   X,
   ArrowRight,
   History,
-  TwitterIcon,
   LucideTwitter,
   InstagramIcon,
 } from "lucide-react";
