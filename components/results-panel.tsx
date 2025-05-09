@@ -153,12 +153,12 @@ export function ResultsPanel({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+      <div className="p-4 border-b border-slate-700 flex items-center sm:justify-between flex-wrap justify-center gap-4">
         <div>
           <h2 className="text-xl font-bold text-white">
             Results for &rdquo;{searchTerm}&rdquo;
           </h2>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap justify-center">
             <Badge
               variant="outline"
               className="bg-blue-900/20 text-blue-400 border-blue-800"
