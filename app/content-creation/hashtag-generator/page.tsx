@@ -35,7 +35,7 @@ const Page = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate blog content");
+        throw new Error(errorData.error || "Failed to generate hashtags");
       }
 
       const data = await response.json();
@@ -186,24 +186,26 @@ const Page = () => {
                     </span>
                   </div>
                 ) : (
-                  <div className="relative">
-                    {hashtags?.map((hashtag, index) => (
-                      <span
-                        key={index}
-                        className="inline-block bg-purple-900/20 text-purple-300 border-purple-800 rounded-full px-3 py-1 mr-2 mb-2"
-                      >
-                        {hashtag}
-                      </span>
-                    ))}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      {hashtags?.map((hashtag, index) => (
+                        <span
+                          key={index}
+                          className="inline-block bg-purple-900/20 text-purple-300 border-purple-800 rounded-full px-3 py-1 me-2 mb-2"
+                        >
+                          {hashtag}
+                        </span>
+                      ))}
+                    </div>
                     <Button
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          hashtags?.join(" ") || ""
+                          hashtags?.join("\n") || ""
                         );
                         setIsCopied(true);
                         setTimeout(() => setIsCopied(false), 2000);
                       }}
-                      className="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700"
+                      className="bg-purple-600 hover:bg-purple-700"
                       size="sm"
                     >
                       {isCopied ? "Copied!" : "Copy"}

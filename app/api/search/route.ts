@@ -1,3 +1,12 @@
+import {
+  InstagramHashtag,
+  InstagramPlace,
+  InstagramSearchResponse,
+  InstagramUser,
+  RawTweet,
+  TikTokMappedItem,
+  TikTokRawEntry,
+} from "@/app/types";
 import { type NextRequest, NextResponse } from "next/server";
 
 const RedditLimit = Math.floor(Math.random() * (20 - 10 + 1)) + 10; // Reddit API limit for search results
@@ -18,7 +27,14 @@ export async function GET(request: NextRequest) {
 
   try {
     // Fetch data from all platforms in parallel with individual error handling
-    const [youtubeResults, redditResults, googleResults] = await Promise.all([
+    const [
+      youtubeResults,
+      redditResults,
+      googleResults,
+      xResults,
+      instagramResults,
+      TikTokResults,
+    ] = await Promise.all([
       fetchYouTubeResults(query).catch((error) => {
         console.error("YouTube search error:", error);
         return [];
@@ -31,12 +47,27 @@ export async function GET(request: NextRequest) {
         console.error("Google search error:", error);
         return [];
       }),
+      fetchXResults(query).catch((error) => {
+        console.error("X search error:", error);
+        return [];
+      }),
+      fetchInstagramResults(query).catch((error) => {
+        console.error("Instagram search error:", error);
+        return { users: [], hashtags: [], places: [] };
+      }),
+      fetchTikTokResults(query).catch((error) => {
+        console.error("TikTok search error:", error);
+        return [];
+      }),
     ]);
 
     return NextResponse.json({
       youtube: youtubeResults,
       reddit: redditResults,
       google: googleResults,
+      x: xResults,
+      instagram: instagramResults,
+      tiktok: TikTokResults,
     });
   } catch (error) {
     console.error("Error fetching search results:", error);
@@ -45,6 +76,9 @@ export async function GET(request: NextRequest) {
       youtube: [],
       reddit: getMockRedditResults(query),
       google: [],
+      x: [],
+      instagram: { users: [], hashtags: [], places: [] },
+      tiktok: { users: [], videos: [] },
       error: "Some search results could not be fetched",
     });
   }
@@ -398,7 +432,163 @@ async function fetchGoogleAlternativeResults(query: string) {
   }
 }
 
+// For X (formerly Twitter), we'll use rapidAPI to fetch the latest posts
+async function fetchXResults(query: string) {
+  try {
+    const url = `https://twitter-api45.p.rapidapi.com/search_communities_latest.php?query=${encodeURIComponent(
+      query
+    )}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "X-RapidAPI-Key": process.env.X_RAPIDAPI_KEY || "",
+        "X-RapidAPI-Host": process.env.X_RAPIDAPI_HOST || "",
+      },
+    });
+
+    if (!response.ok) {
+      console.error("X API Error:", response.status, await response.text());
+      throw new Error("Failed to fetch X posts");
+    }
+
+    const data = await response.json();
+    const timeline = data.timeline;
+
+    if (!Array.isArray(timeline)) {
+      console.error("Invalid data format:", data);
+      return [];
+    }
+
+    return timeline.map((tweet: RawTweet) => {
+      const timeAgo = getTimeAgo(new Date(tweet.created_at));
+
+      return {
+        id: tweet.tweet_id,
+        text: tweet.text,
+        authorName: tweet.user_info.name,
+        authorUsername: tweet.user_info.screen_name,
+        authorProfileImage: tweet.user_info.profile_image_url,
+        createdAt: timeAgo,
+        url: `https://twitter.com/${tweet.user_info.screen_name}/status/${tweet.tweet_id}`,
+        source: tweet.source,
+        replies: tweet.replies || 0,
+        retweets: tweet.retweets || 0,
+        favorites: tweet.favorites || 0,
+        views: tweet.views || 0,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching X results:", error);
+    return [];
+  }
+}
+
+// For Instagram, we'll use a mock function to simulate results
+async function fetchInstagramResults(query: string) {
+  const res = await fetch(
+    `https://instagram-looter2.p.rapidapi.com/search?query=${query}`,
+    {
+      headers: {
+        "x-rapidapi-host": process.env.INSTAGRAM_RAPIDAPI_HOST || "",
+        "x-rapidapi-key": process.env.X_RAPIDAPI_KEY || "",
+      },
+    }
+  );
+
+  if (!res.ok) throw new Error("Failed to fetch Instagram data");
+
+  const data = await res.json();
+  const mappedResponse = mapInstagramResponse(data);
+
+  return {
+    users: mappedResponse.users.slice(0, 5),
+    hashtags: mappedResponse.hashtags.slice(0, 10),
+    places: mappedResponse.places.slice(0, 5),
+  };
+}
+
+// TikTok search API integration
+async function fetchTikTokResults(query: string) {
+  const res = await fetch(
+    `https://tiktok-api23.p.rapidapi.com/api/search/general?keyword=${query}&count=20`,
+    {
+      headers: {
+        "x-rapidapi-host": process.env.TIKTOK_RAPIDAPI_HOST || "",
+        "x-rapidapi-key": process.env.X_RAPIDAPI_KEY || "",
+      },
+    }
+  );
+
+  if (!res.ok) throw new Error("Failed to fetch TikTok data");
+
+  const data = await res.json();
+  return mapTikTokResponse(data);
+}
+
 // Helper functions
+function mapTikTokResponse(rawData: { data: TikTokRawEntry[] }) {
+  const results: TikTokMappedItem[] = [];
+
+  rawData?.data?.forEach((entry: TikTokRawEntry) => {
+    if (entry.type === 1 && "item" in entry && entry.item?.video) {
+      results.push({
+        type: "video",
+        id: entry.item.id,
+        description: entry.item.desc,
+        createTime: entry.item.createTime,
+        cover: entry.item.video.cover,
+        playUrl: entry.item.video.playAddr,
+        duration: entry.item.video.duration,
+        width: entry.item.video.width,
+        height: entry.item.video.height,
+      });
+    }
+
+    if (entry.type === 4 && "user_list" in entry) {
+      entry.user_list.forEach((userEntry) => {
+        const user = userEntry.user_info;
+        results.push({
+          type: "user",
+          id: user.uid,
+          uniqueId: user.unique_id,
+          nickname: user.nickname,
+          avatar: user.avatar_thumb?.url_list?.[0] ?? "",
+          signature: user.signature,
+          followerCount: user.follower_count,
+        });
+      });
+    }
+  });
+
+  return results;
+}
+
+function mapInstagramResponse(data: InstagramSearchResponse) {
+  const users: InstagramUser[] = data.users.map(({ user }) => ({
+    id: user.id,
+    username: user.username,
+    fullName: user.full_name,
+    isVerified: user.is_verified,
+    profilePicUrl: user.profile_pic_url,
+  }));
+
+  const hashtags: InstagramHashtag[] = data.hashtags.map(({ hashtag }) => ({
+    id: hashtag.id.toString(),
+    name: hashtag.name,
+    mediaCount: hashtag.media_count,
+  }));
+
+  const places: InstagramPlace[] = data.places.map(({ place }) => ({
+    id: place.location.pk.toString(),
+    title: place.title,
+    subtitle: place.subtitle,
+    locationName: place.location.name,
+  }));
+
+  return { users, hashtags, places };
+}
+
 function parseDuration(duration: string): string {
   // Parse ISO 8601 duration format (PT1H2M3S)
   const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
