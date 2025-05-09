@@ -10,7 +10,7 @@ const Navbar = () => {
 
   return (
     <header className="bg-slate-900 border-b border-slate-700 dark:border-slate-700 p-4">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <div className="max-w-7xl mx-auto flex sm:justify-between items-center flex-wrap justify-center">
         <h1 className="text-2xl font-bold">
           <span className="text-purple-400">Omni</span>
           <span className="text-pink-400">Search</span>
