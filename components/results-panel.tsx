@@ -420,7 +420,7 @@ export function ResultsPanel({
           </TabsContent>
 
           <TabsContent value="tiktok" className="h-full mt-0">
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {results.tiktok
                 .slice(
                   (currentPage - 1) * itemsPerPage,
