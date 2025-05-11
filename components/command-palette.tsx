@@ -1,5 +1,3 @@
-"use client";
-
 import type * as React from "react";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -10,9 +8,13 @@ import {
   X,
   ArrowRight,
   History,
+  LucideTwitter,
+  InstagramIcon,
+  LinkedinIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
+import TiktokIcon from "./icons/TiktokIcon";
 
 interface CommandPaletteProps {
   searchTerm: string;
@@ -39,6 +41,7 @@ export function CommandPalette({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(value);
+    setOpen(false);
   };
 
   const handleClear = () => {
@@ -143,10 +146,47 @@ export function CommandPalette({
                   className="flex items-center gap-2 p-2 rounded hover:bg-slate-800 cursor-pointer"
                 >
                   <Globe className="h-4 w-4 text-blue-500" />
-                  <span>
-                    Search Google for
-                    {value || "..."}
-                  </span>
+                  <span>Search Google for {value || "..."}</span>
+                </div>
+                <div
+                  onClick={() => {
+                    onSearch(`${value} site:x.com`);
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded hover:bg-slate-800 cursor-pointer"
+                >
+                  <LucideTwitter className="h-4 w-4 text-slate-500" />
+                  <span>Search X for {value || "..."}</span>
+                </div>
+                <div
+                  onClick={() => {
+                    onSearch(`${value} site:instagram.com`);
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded hover:bg-slate-800 cursor-pointer"
+                >
+                  <InstagramIcon className="h-4 w-4 text-pink-500" />
+                  <span>Search Instagram for {value || "..."}</span>
+                </div>
+                <div
+                  onClick={() => {
+                    onSearch(`${value} site:tiktok.com`);
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded hover:bg-slate-800 cursor-pointer"
+                >
+                  <TiktokIcon />
+                  <span>Search Tiktok for {value || "..."}</span>
+                </div>
+                <div
+                  onClick={() => {
+                    onSearch(`${value} site:linkedin.com`);
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded hover:bg-slate-800 cursor-pointer"
+                >
+                  <LinkedinIcon className="h-4 w-4 text-blue-400" />
+                  <span>Search LinkedIn for {value || "..."}</span>
                 </div>
               </div>
 

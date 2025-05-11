@@ -21,7 +21,7 @@ export default function Layout({
         />
       </Head>
       <Navbar />
-      <div className="min-h-screen bg-slate-900 text-white container mx-auto px-4 pt-4">
+      <div className="min-h-screen bg-slate-900 text-white px-4 pt-4">
         <Button
           variant="ghost"
           className="mb-6 text-purple-600 dark:text-purple-400 hover:text-white hover:cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900"
