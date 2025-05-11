@@ -3,10 +3,10 @@ import {
   InstagramPlace,
   InstagramSearchResponse,
   InstagramUser,
-  LinkedInPost,
+  LinkedInResult,
   LinkedInRawPost,
   RawTweet,
-  TikTokMappedItem,
+  TikTokResult,
   TikTokRawEntry,
 } from "@/app/types";
 import { type NextRequest, NextResponse } from "next/server";
@@ -535,7 +535,7 @@ async function fetchTikTokResults(query: string) {
   return mapTikTokResponse(data);
 }
 
-async function fetchLinkedInResults(query: string): Promise<LinkedInPost[]> {
+async function fetchLinkedInResults(query: string): Promise<LinkedInResult[]> {
   const res = await fetch(
     "https://linkedin-bulk-data-scraper.p.rapidapi.com/search_posts",
     {
@@ -563,7 +563,7 @@ async function fetchLinkedInResults(query: string): Promise<LinkedInPost[]> {
     throw new Error("Failed to fetch LinkedIn data");
 
   return data.posts.map(
-    (item: LinkedInRawPost): LinkedInPost => ({
+    (item: LinkedInRawPost): LinkedInResult => ({
       url: item.share_url,
       author: {
         name: item.actor.actor_name,
@@ -586,7 +586,7 @@ async function fetchLinkedInResults(query: string): Promise<LinkedInPost[]> {
 
 // Helper functions
 function mapTikTokResponse(rawData: { data: TikTokRawEntry[] }) {
-  const results: TikTokMappedItem[] = [];
+  const results: TikTokResult[] = [];
 
   rawData?.data?.forEach((entry: TikTokRawEntry) => {
     if (entry.type === 1 && "item" in entry && entry.item?.video) {

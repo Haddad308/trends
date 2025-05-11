@@ -1,11 +1,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ExternalLink, Play } from "lucide-react";
-import { TikTokMappedItem } from "@/app/types";
+import { TikTokResult } from "@/app/types";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 
-export default function TikTokCard({ item }: { item: TikTokMappedItem }) {
+export default function TikTokCard({ item }: { item: TikTokResult }) {
   const [showEmbed, setShowEmbed] = useState(false);
 
   if (item.type === "video") {

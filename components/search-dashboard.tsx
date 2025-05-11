@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { TrendingTopics } from "./trending-topics";
 import { SearchHistory } from "./search-history";
 import Navbar from "./Navbar";
-import { LinkedInPost } from "@/app/types";
+import { LinkedInResult } from "@/app/types";
 
 export function SearchDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,7 +25,7 @@ export function SearchDashboard() {
     x: any[];
     instagram: any;
     tiktok: any[];
-    linkedIn: LinkedInPost[];
+    linkedIn: LinkedInResult[];
   }>({
     google: [],
     youtube: [],

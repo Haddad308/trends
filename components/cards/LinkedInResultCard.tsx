@@ -2,10 +2,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { ExternalLink } from "lucide-react";
-import { LinkedInPost } from "@/app/types";
+import { LinkedInResult } from "@/app/types";
 
 interface Props {
-  post: LinkedInPost;
+  post: LinkedInResult;
 }
 
 export function LinkedInResultCard({ post }: Props) {

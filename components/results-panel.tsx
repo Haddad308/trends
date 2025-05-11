@@ -27,10 +27,10 @@ import {
   InstagramPlace,
   InstagramResult,
   InstagramUser,
-  LinkedInPost,
+  LinkedInResult,
   RedditResult,
   SearchTab,
-  TikTokMappedItem,
+  TikTokResult,
   XResult,
   YoutubeResult,
 } from "@/app/types";
@@ -49,8 +49,8 @@ interface ResultsPanelProps {
     reddit: RedditResult[];
     x: XResult[];
     instagram: InstagramResult;
-    tiktok: TikTokMappedItem[];
-    linkedIn: LinkedInPost[];
+    tiktok: TikTokResult[];
+    linkedIn: LinkedInResult[];
   };
   searchTerm: string;
   isLoading: boolean;

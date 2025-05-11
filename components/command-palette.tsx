@@ -10,6 +10,7 @@ import {
   History,
   LucideTwitter,
   InstagramIcon,
+  LinkedinIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
@@ -176,6 +177,16 @@ export function CommandPalette({
                 >
                   <TiktokIcon />
                   <span>Search Tiktok for {value || "..."}</span>
+                </div>
+                <div
+                  onClick={() => {
+                    onSearch(`${value} site:linkedin.com`);
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-2 p-2 rounded hover:bg-slate-800 cursor-pointer"
+                >
+                  <LinkedinIcon className="h-4 w-4 text-blue-400" />
+                  <span>Search LinkedIn for {value || "..."}</span>
                 </div>
               </div>
 

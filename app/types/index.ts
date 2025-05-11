@@ -200,7 +200,7 @@ export type TikTokUser = {
   followerCount: number;
 };
 
-export type TikTokMappedItem = TikTokVideo | TikTokUser;
+export type TikTokResult = TikTokVideo | TikTokUser;
 
 export type PostPlatform = "linkedin" | "facebook" | "x" | "instagram";
 
@@ -231,7 +231,7 @@ export interface LinkedInRawPost {
   repostsUrn: string;
 }
 
-export interface LinkedInPost {
+export interface LinkedInResult {
   url: string;
   author: {
     name: string;
