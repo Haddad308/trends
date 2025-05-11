@@ -15,9 +15,11 @@ import {
   LucideTwitter,
   TwitterIcon,
   InstagramIcon,
+  LinkedinIcon,
 } from "lucide-react";
 import { GoogleResultCard } from "@/components/google-result-card";
 import { YoutubeResultCard } from "@/components/youtube-result-card";
+import { LinkedInResultCard } from "@/components/cards/LinkedInResultCard";
 import { RedditResultCard } from "@/components/reddit-result-card";
 import {
   GoogleResult,
@@ -25,6 +27,7 @@ import {
   InstagramPlace,
   InstagramResult,
   InstagramUser,
+  LinkedInPost,
   RedditResult,
   SearchTab,
   TikTokMappedItem,
@@ -46,7 +49,8 @@ interface ResultsPanelProps {
     reddit: RedditResult[];
     x: XResult[];
     instagram: InstagramResult;
-    tiktok: TikTokMappedItem[]; // Replace with actual type if available
+    tiktok: TikTokMappedItem[];
+    linkedIn: LinkedInPost[];
   };
   searchTerm: string;
   isLoading: boolean;
@@ -85,7 +89,7 @@ export function ResultsPanel({
         </h2>
         <p className="text-slate-400 max-w-md">
           Enter a search term in the command palette to see results from Google,
-          YouTube, and Reddit.
+          YouTube, Reddit, and more.
         </p>
       </div>
     );
@@ -134,7 +138,8 @@ export function ResultsPanel({
     results.reddit.length > 0 ||
     results.x.length > 0 ||
     instagramTotalResults > 0 ||
-    results.tiktok.length > 0;
+    results.tiktok.length > 0 ||
+    results.linkedIn.length > 0;
 
   if (!hasResults) {
     return (
@@ -204,6 +209,13 @@ export function ResultsPanel({
               <TiktokIcon />
               {results.tiktok.length}
             </Badge>
+            <Badge
+              variant="outline"
+              className="bg-blue-900 border-blue text-blue-400"
+            >
+              <LinkedinIcon />
+              {results.linkedIn.length}
+            </Badge>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -232,7 +244,7 @@ export function ResultsPanel({
         className="flex-1 flex flex-col"
       >
         <div className="px-4 pt-4 flex justify-center">
-          <TabsList className="grid grid-cols-3 md:grid-cols-6 bg-slate-900 !h-fit">
+          <TabsList className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 bg-slate-900 !h-fit">
             <TabsTrigger
               value="google"
               className="flex items-center justify-center gap-2 data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-300"
@@ -273,6 +285,13 @@ export function ResultsPanel({
             >
               <TiktokIcon />
               Tiktok
+            </TabsTrigger>
+            <TabsTrigger
+              value="linkedIn"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-blue-950/90"
+            >
+              <LinkedinIcon />
+              LinkedIn
             </TabsTrigger>
           </TabsList>
         </div>
@@ -408,11 +427,34 @@ export function ResultsPanel({
                   currentPage * itemsPerPage
                 )
                 .map((result, index) => (
-                  <TikTokResultCard key={`x-tab-${index}`} item={result} />
+                  <TikTokResultCard key={`tiktok-tab-${index}`} item={result} />
                 ))}
               {results.tiktok.length === 0 && (
                 <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
                   <p className="text-slate-400">No Tiktok results to display</p>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="linkedIn" className="h-full mt-0">
+            <div className="grid grid-cols-1 gap-4">
+              {results.linkedIn
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <LinkedInResultCard
+                    key={`linkedIn-tab-${index}`}
+                    post={result}
+                  />
+                ))}
+              {results.linkedIn.length === 0 && (
+                <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
+                  <p className="text-slate-400">
+                    No LinkedIn results to display
+                  </p>
                 </Card>
               )}
             </div>

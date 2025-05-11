@@ -3,6 +3,8 @@ import {
   InstagramPlace,
   InstagramSearchResponse,
   InstagramUser,
+  LinkedInPost,
+  LinkedInRawPost,
   RawTweet,
   TikTokMappedItem,
   TikTokRawEntry,
@@ -34,6 +36,7 @@ export async function GET(request: NextRequest) {
       xResults,
       instagramResults,
       TikTokResults,
+      linkedInResults,
     ] = await Promise.all([
       fetchYouTubeResults(query).catch((error) => {
         console.error("YouTube search error:", error);
@@ -59,6 +62,10 @@ export async function GET(request: NextRequest) {
         console.error("TikTok search error:", error);
         return [];
       }),
+      fetchLinkedInResults(query).catch((error) => {
+        console.error("LinkedIn search error:", error);
+        return [];
+      }),
     ]);
 
     return NextResponse.json({
@@ -68,6 +75,7 @@ export async function GET(request: NextRequest) {
       x: xResults,
       instagram: instagramResults,
       tiktok: TikTokResults,
+      linkedIn: linkedInResults,
     });
   } catch (error) {
     console.error("Error fetching search results:", error);
@@ -79,6 +87,7 @@ export async function GET(request: NextRequest) {
       x: [],
       instagram: { users: [], hashtags: [], places: [] },
       tiktok: { users: [], videos: [] },
+      linkedIn: [],
       error: "Some search results could not be fetched",
     });
   }
@@ -524,6 +533,55 @@ async function fetchTikTokResults(query: string) {
 
   const data = await res.json();
   return mapTikTokResponse(data);
+}
+
+async function fetchLinkedInResults(query: string): Promise<LinkedInPost[]> {
+  const res = await fetch(
+    "https://linkedin-bulk-data-scraper.p.rapidapi.com/search_posts",
+    {
+      method: "POST",
+      headers: {
+        "x-rapidapi-host": process.env.LINKEDIN_RAPIDAPI_HOST || "",
+        "x-rapidapi-key": process.env.X_RAPIDAPI_KEY || "",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        page: 1,
+        query: query,
+        filters: [
+          {
+            key: "datePosted",
+            values: "past-week",
+          },
+        ],
+      }),
+    }
+  );
+  const data = await res.json();
+
+  if (!data.success || !Array.isArray(data.posts))
+    throw new Error("Failed to fetch LinkedIn data");
+
+  return data.posts.map(
+    (item: LinkedInRawPost): LinkedInPost => ({
+      url: item.share_url,
+      author: {
+        name: item.actor.actor_name,
+        description: item.actor.actor_description,
+        subDescription: item.actor.actor_subDescription,
+        profileUrl: item.actor.actor_navigationContext,
+        avatar: item.actor.actor_image !== "na" ? item.actor.actor_image : null,
+      },
+      content: item.commentary,
+      postedAt: item.postedAt,
+      image: item.imageComponent?.[0],
+      stats: {
+        likes: item.social_details.numLikes,
+        comments: item.social_details.numComments,
+        shares: item.social_details.numShares,
+      },
+    })
+  );
 }
 
 // Helper functions

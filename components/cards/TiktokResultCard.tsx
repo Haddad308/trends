@@ -31,12 +31,7 @@ export default function TikTokCard({ item }: { item: TikTokMappedItem }) {
             className="relative w-full aspect-[9/16] max-h-[480px] cursor-pointer"
             onClick={() => setShowEmbed(true)}
           >
-            <Image
-              src={item.cover}
-              alt="video cover"
-              fill
-              className="object-cover"
-            />
+            <Image src={item.cover} alt="video cover" fill />
             <div className="absolute inset-0 bg-transparent bg-opacity-40 flex items-center justify-center">
               <div className="w-12 h-12 rounded-full bg-pink-600 flex items-center justify-center">
                 <Play className="h-6 w-6 text-white fill-white" />

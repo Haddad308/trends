@@ -4,7 +4,8 @@ export type SearchTab =
   | "reddit"
   | "x"
   | "instagram"
-  | "tiktok";
+  | "tiktok"
+  | "linkedIn";
 
 export interface GoogleResult {
   title: string;
@@ -202,3 +203,49 @@ export type TikTokUser = {
 export type TikTokMappedItem = TikTokVideo | TikTokUser;
 
 export type PostPlatform = "linkedin" | "facebook" | "x" | "instagram";
+
+export interface LinkedInRawPost {
+  share_url: string;
+  actor: {
+    actor_image: string;
+    actor_description: string;
+    actor_name: string;
+    actor_subDescription: string;
+    actor_navigationContext: string;
+  };
+  commentary: string;
+  social_details: {
+    numLikes: number;
+    numComments: number;
+    numShares: number;
+    reactionTypeCounts: {
+      type: string;
+      count: number;
+    }[];
+  };
+  postedAt: string;
+  imageComponent: string[];
+  urn: string;
+  reactionsUrn: string;
+  commentsUrn: string;
+  repostsUrn: string;
+}
+
+export interface LinkedInPost {
+  url: string;
+  author: {
+    name: string;
+    description: string;
+    subDescription: string;
+    profileUrl: string;
+    avatar: string | null;
+  };
+  content: string;
+  postedAt: string;
+  image?: string;
+  stats: {
+    likes: number;
+    comments: number;
+    shares: number;
+  };
+}
