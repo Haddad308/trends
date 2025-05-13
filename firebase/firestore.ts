@@ -1,7 +1,9 @@
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import { app } from "./firabase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { db } from "./firabase";
+import { User } from "@/app/types";
+import { User as FirebaseAuthUser } from "firebase/auth";
 
-const db = getFirestore(app);
+const FREE_SEARCH_COUNT = 10; // Default free search count
 
 // Save API key to Firestore
 export const saveApiKey = async (userId: string, apiKey: string) => {
@@ -36,4 +38,51 @@ export const getApiKey = async (userId: string) => {
     console.error("Error getting API key:", error);
     throw error;
   }
+};
+
+// Get user data from Firestore
+export const getUserFromFirestore = async (
+  authUser: FirebaseAuthUser
+): Promise<User | null> => {
+  const userRef = doc(db, "users", authUser.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) return null;
+
+  const data = userSnap.data();
+
+  return {
+    ...authUser,
+    freeSearchCount: data.freeSearchCount ?? 0,
+    giminiApiKey: data.giminiApiKey ?? "",
+    createdAt: data.updatedAt?.toDate() ?? new Date(),
+    updatedAt: data.updatedAt?.toDate() ?? new Date(),
+  };
+};
+
+// Create new user in Firestore
+export const createUserInFirestore = async (
+  firebaseUser: FirebaseAuthUser
+): Promise<User> => {
+  const newUserData = {
+    freeSearchCount: FREE_SEARCH_COUNT,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    giminiApiKey: "AIzaSyCE8h7haXPW_nIyzRrwwpFAXdbox6JDFyM",
+  };
+
+  await setDoc(doc(db, "users", firebaseUser.uid), newUserData);
+  return { ...firebaseUser, ...newUserData };
+};
+
+// Ensure user exists in Firestore
+export const ensureUserInFirestore = async (firebaseUser: FirebaseAuthUser) => {
+  const userRef = doc(db, "users", firebaseUser.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    return await createUserInFirestore(firebaseUser);
+  }
+
+  return null;
 };

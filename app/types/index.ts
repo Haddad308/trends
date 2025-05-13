@@ -1,3 +1,5 @@
+import { User as FirebaseAuthUser } from "firebase/auth";
+
 export type SearchTab =
   | "google"
   | "youtube"
@@ -248,4 +250,11 @@ export interface LinkedInResult {
     comments: number;
     shares: number;
   };
+}
+
+export interface User extends FirebaseAuthUser {
+  freeSearchCount: number;
+  giminiApiKey: string | undefined;
+  createdAt: Date;
+  updatedAt: Date;
 }

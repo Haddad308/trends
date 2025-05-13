@@ -8,14 +8,15 @@ import {
   type ReactNode,
 } from "react";
 import {
-  type User,
-  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
+  signInWithEmailAndPassword,
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
 import { auth } from "./firabase";
+import { User } from "@/app/types";
+import { ensureUserInFirestore, getUserFromFirestore } from "./firestore";
 
 interface AuthContextType {
   user: User | null;
@@ -39,8 +40,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const maybeNewUser = await ensureUserInFirestore(firebaseUser);
+
+        if (maybeNewUser) {
+          setUser(maybeNewUser);
+        } else {
+          const appUser = await getUserFromFirestore(firebaseUser);
+          setUser(appUser);
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 
