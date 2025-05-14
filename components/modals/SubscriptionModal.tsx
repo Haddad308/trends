@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { FREE_SEARCH_COUNT } from "@/lib/constants";
 
 interface Props {
   open: boolean;
@@ -30,8 +31,8 @@ export function SubscriptionModal({ open, onClose }: Props) {
           <DialogTitle className="text-xl">Search Limit Reached</DialogTitle>
         </DialogHeader>
         <div className="text-sm mt-2">
-          You’ve used all 10 of your free searches. To continue using search
-          features, please subscribe.
+          You’ve used all {FREE_SEARCH_COUNT} of your free searches. To continue
+          using search features, please subscribe.
         </div>
         <DialogFooter className="mt-4">
           <Button

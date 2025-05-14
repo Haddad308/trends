@@ -2,8 +2,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "./firabase";
 import { User } from "@/app/types";
 import { User as FirebaseAuthUser } from "firebase/auth";
-
-const FREE_SEARCH_COUNT = 10; // Default free search count
+import { FREE_SEARCH_COUNT } from "@/lib/constants";
 
 // Save API key to Firestore
 export const saveApiKey = async (userId: string, apiKey: string) => {
