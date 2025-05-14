@@ -12,6 +12,9 @@ import { TrendingTopics } from "./trending-topics";
 import { SearchHistory } from "./search-history";
 import Navbar from "./Navbar";
 import { LinkedInResult } from "@/app/types";
+import { SubscriptionModal } from "@/components/modals/SubscriptionModal";
+import { useAuth } from "@/firebase/auth-context";
+import { updateFreeSearchCount } from "@/firebase/firestore";
 
 export function SearchDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,11 +38,20 @@ export function SearchDashboard() {
     tiktok: [],
     linkedIn: [],
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user, setUser } = useAuth();
+  const freeSearchCount = user?.freeSearchCount;
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
     const fetchResults = async () => {
+      // Return if the user has used all free searches
+      if (freeSearchCount === 0) {
+        setIsModalOpen(true);
+        return;
+      }
+      // Return if the search term is less than 3 characters
       if (debouncedSearchTerm.length < 3) {
         setResults({
           google: [],
@@ -62,6 +74,22 @@ export function SearchDashboard() {
         const data = await response.json();
         setResults(data);
 
+        // Deduct one free search count
+        if (user && freeSearchCount !== undefined) {
+          const isUpdated = await updateFreeSearchCount(
+            user.uid,
+            freeSearchCount - 1
+          );
+          if (isUpdated) {
+            setUser((prev) => {
+              if (!prev) return null;
+              return {
+                ...prev,
+                freeSearchCount: freeSearchCount - 1,
+              };
+            });
+          }
+        }
         // Add to search history if not already present
         if (
           debouncedSearchTerm.trim() &&
@@ -79,7 +107,7 @@ export function SearchDashboard() {
     };
 
     fetchResults();
-  }, [debouncedSearchTerm, searchHistory]);
+  }, [debouncedSearchTerm, setSearchHistory]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -93,6 +121,13 @@ export function SearchDashboard() {
 
   return (
     <section className="flex flex-col bg-background">
+      {/* Subscription Modal */}
+      {isModalOpen && (
+        <SubscriptionModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
       <Navbar />
       {/* Main Content */}
       <div className="flex-1 overflow-auto">

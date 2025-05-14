@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import TiktokIcon from "./icons/TiktokIcon";
+import { useAuth } from "@/firebase/auth-context";
 
 interface CommandPaletteProps {
   searchTerm: string;
@@ -32,6 +33,8 @@ export function CommandPalette({
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(searchTerm);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const hasUsedAllFreeSearches = useAuth().user?.freeSearchCount === 0;
 
   // Sync the internal value with the external searchTerm
   useEffect(() => {
@@ -59,14 +62,22 @@ export function CommandPalette({
               "flex items-center gap-2 p-2 rounded-lg border transition-all",
               open
                 ? "border-purple-500 bg-slate-900/90 shadow-[0_0_0_1px] shadow-purple-500/20"
-                : "border-slate-700 bg-slate-800/90"
+                : "border-slate-700 bg-slate-800/90",
+              hasUsedAllFreeSearches && "cursor-not-allowed"
             )}
             onClick={() => {
-              setOpen(true);
-              inputRef.current?.focus();
+              if (!hasUsedAllFreeSearches) {
+                setOpen(true);
+                inputRef.current?.focus();
+              }
             }}
           >
-            <div className="flex items-center gap-2 px-2">
+            <div
+              className={cn(
+                "flex items-center gap-2 px-2",
+                hasUsedAllFreeSearches && "cursor-not-allowed"
+              )}
+            >
               <Search
                 className={cn(
                   "h-5 w-5",
@@ -78,10 +89,14 @@ export function CommandPalette({
             </div>
 
             <input
+              disabled={hasUsedAllFreeSearches}
               ref={inputRef}
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              className="flex-1 bg-transparent border-none outline-none placeholder:text-slate-400 text-white"
+              className={cn(
+                "flex-1 bg-transparent border-none outline-none placeholder:text-slate-400 text-white",
+                hasUsedAllFreeSearches && "cursor-not-allowed"
+              )}
               placeholder="Search across platforms or type / for commands..."
               onFocus={() => setOpen(true)}
               onBlur={() => setTimeout(() => setOpen(false), 100)}
@@ -101,9 +116,13 @@ export function CommandPalette({
             )}
 
             <Button
+              disabled={hasUsedAllFreeSearches}
               type="submit"
               size="sm"
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className={cn(
+                "bg-purple-600 hover:bg-purple-700 text-white",
+                hasUsedAllFreeSearches && "cursor-not-allowed"
+              )}
             >
               <ArrowRight className="h-4 w-4" />
               <span className="sr-only">Search</span>

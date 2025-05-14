@@ -6,6 +6,8 @@ import {
   useState,
   useEffect,
   type ReactNode,
+  SetStateAction,
+  Dispatch,
 } from "react";
 import {
   signOut as firebaseSignOut,
@@ -20,6 +22,7 @@ import { ensureUserInFirestore, getUserFromFirestore } from "./firestore";
 
 interface AuthContextType {
   user: User | null;
+  setUser: Dispatch<SetStateAction<User | null>>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -74,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = {
     user,
+    setUser,
     signIn,
     signInWithGoogle,
     signOut,

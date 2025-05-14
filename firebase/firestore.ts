@@ -68,7 +68,7 @@ export const createUserInFirestore = async (
     freeSearchCount: FREE_SEARCH_COUNT,
     createdAt: new Date(),
     updatedAt: new Date(),
-    giminiApiKey: "AIzaSyCE8h7haXPW_nIyzRrwwpFAXdbox6JDFyM",
+    giminiApiKey: process.env.NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY,
   };
 
   await setDoc(doc(db, "users", firebaseUser.uid), newUserData);
@@ -85,4 +85,19 @@ export const ensureUserInFirestore = async (firebaseUser: FirebaseAuthUser) => {
   }
 
   return null;
+};
+
+// Update free search count in Firestore
+export const updateFreeSearchCount = async (userId: string, count: number) => {
+  try {
+    await setDoc(
+      doc(db, "users", userId),
+      { freeSearchCount: count },
+      { merge: true }
+    );
+    return true;
+  } catch (error) {
+    console.error("Error updating free search count:", error);
+    throw error;
+  }
 };
