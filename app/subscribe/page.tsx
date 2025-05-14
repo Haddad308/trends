@@ -11,7 +11,7 @@ import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { SubscriptionMessageModal } from "@/components/modals/SubscriptionMessageModal";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SUBSCRIPTION_PRICE } from "@/lib/constants";
+import { SUBSCRIPTION_CURRENCY, SUBSCRIPTION_PRICE } from "@/lib/constants";
 import {
   OnApproveData,
   OnApproveActions,
@@ -65,7 +65,7 @@ export default function SubscribePage() {
         {
           description: "TrendsApp Lifetime Access",
           amount: {
-            currency_code: "USD",
+            currency_code: SUBSCRIPTION_CURRENCY,
             value: SUBSCRIPTION_PRICE.toString(),
           },
         },
@@ -182,7 +182,7 @@ export default function SubscribePage() {
             <PayPalScriptProvider
               options={{
                 clientId: paypalClientId,
-                currency: "USD",
+                currency: SUBSCRIPTION_CURRENCY,
               }}
             >
               <PayPalButtons
