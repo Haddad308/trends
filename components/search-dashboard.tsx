@@ -10,7 +10,11 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { TrendingTopics } from "./trending-topics";
 import { SearchHistory } from "./search-history";
-import BlogGenerator from "./blog-generator";
+import Navbar from "./Navbar";
+import { LinkedInResult } from "@/app/types";
+import { SubscriptionModal } from "@/components/modals/SubscriptionModal";
+import { useAuth } from "@/firebase/auth-context";
+import { updateFreeSearchCount } from "@/firebase/firestore";
 
 export function SearchDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,18 +25,43 @@ export function SearchDashboard() {
     google: any[];
     youtube: any[];
     reddit: any[];
+    x: any[];
+    instagram: any;
+    tiktok: any[];
+    linkedIn: LinkedInResult[];
   }>({
     google: [],
     youtube: [],
     reddit: [],
+    x: [],
+    instagram: { hashtags: [], users: [], places: [] },
+    tiktok: [],
+    linkedIn: [],
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user, setUser } = useAuth();
+  const freeSearchCount = user?.freeSearchCount;
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
     const fetchResults = async () => {
+      // Return if the user has used all free searches
+      if (freeSearchCount === 0) {
+        setIsModalOpen(true);
+        return;
+      }
+      // Return if the search term is less than 3 characters
       if (debouncedSearchTerm.length < 3) {
-        setResults({ google: [], youtube: [], reddit: [] });
+        setResults({
+          google: [],
+          youtube: [],
+          reddit: [],
+          x: [],
+          instagram: { hashtags: [], users: [], places: [] },
+          tiktok: [],
+          linkedIn: [],
+        });
         return;
       }
 
@@ -45,6 +74,22 @@ export function SearchDashboard() {
         const data = await response.json();
         setResults(data);
 
+        // Deduct one free search count
+        if (user && freeSearchCount !== undefined) {
+          const isUpdated = await updateFreeSearchCount(
+            user.uid,
+            freeSearchCount - 1
+          );
+          if (isUpdated) {
+            setUser((prev) => {
+              if (!prev) return null;
+              return {
+                ...prev,
+                freeSearchCount: freeSearchCount - 1,
+              };
+            });
+          }
+        }
         // Add to search history if not already present
         if (
           debouncedSearchTerm.trim() &&
@@ -62,7 +107,7 @@ export function SearchDashboard() {
     };
 
     fetchResults();
-  }, [debouncedSearchTerm, searchHistory]);
+  }, [debouncedSearchTerm, setSearchHistory]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -75,40 +120,15 @@ export function SearchDashboard() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* Header */}
-      <header className="bg-background border-b border-slate-700 dark:border-slate-700 p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">
-            <span className="text-purple-400">Omni</span>
-            <span className="text-pink-400">Search</span>
-          </h1>
-          <button
-            onClick={() => (window.location.href = "/config")}
-            className="group p-2 rounded-lg hover:bg-slate-700 transition-colors flex items-center gap-2 cursor-pointer"
-          >
-            <span className="text-slate-400 group-hover:text-slate-200">
-              Config
-            </span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-slate-400 group-hover:text-slate-200"
-            >
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </button>
-        </div>
-      </header>
-
+    <section className="flex flex-col bg-background">
+      {/* Subscription Modal */}
+      {isModalOpen && (
+        <SubscriptionModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
+      <Navbar />
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
         <div className="max-w-7xl mx-auto p-4">
@@ -192,11 +212,8 @@ export function SearchDashboard() {
               />
             </div>
           </div>
-          <div className="my-10">
-            <BlogGenerator />
-          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

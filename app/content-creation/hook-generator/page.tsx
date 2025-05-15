@@ -1,21 +1,17 @@
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, RefreshCw, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import BlogContent from "./blog-content";
 import { useTrendingTopics } from "@/store/useTrendingTopics";
 
-export default function BlogGenerator() {
+const Page = () => {
   const [keyword, setKeyword] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [blogContent, setBlogContent] = useState("");
+  const [hooks, setHooks] = useState<string[] | null>(null);
   const [error, setError] = useState("");
   const [isCopied, setIsCopied] = useState(false);
 
@@ -29,7 +25,7 @@ export default function BlogGenerator() {
     setError("");
 
     try {
-      const response = await fetch("/api/generate-blog", {
+      const response = await fetch("/api/generate-hooks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,11 +35,11 @@ export default function BlogGenerator() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate blog content");
+        throw new Error(errorData.error || "Failed to generate hooks");
       }
 
       const data = await response.json();
-      setBlogContent(data.content);
+      setHooks(data.content);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred"
@@ -58,7 +54,7 @@ export default function BlogGenerator() {
       <Card className="bg-[#151F33] border-gray-800">
         <div className="p-6">
           <h2 className="text-xl font-semibold text-white mb-4">
-            Generate Blog Content
+            Generate Hooks
           </h2>
 
           <form onSubmit={handleSubmit} className="flex gap-2">
@@ -84,7 +80,7 @@ export default function BlogGenerator() {
                   Generating
                 </>
               ) : (
-                "Generate Blog"
+                "Generate Hooks"
               )}
             </Button>
           </form>
@@ -146,12 +142,14 @@ export default function BlogGenerator() {
         </div>
       )}
 
-      {(isGenerating || blogContent) && (
+      {(isGenerating || hooks) && (
         <Card className="bg-[#151F33] border-gray-800">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">Blog Results</h2>
-              {blogContent && (
+              <h2 className="text-xl font-semibold text-white">
+                Hooks Results
+              </h2>
+              {hooks && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -178,65 +176,47 @@ export default function BlogGenerator() {
               </Badge>
             </div>
 
-            <Tabs defaultValue="preview" className="w-full">
-              <TabsList className="bg-[#1a2236] border-gray-700">
-                <TabsTrigger
-                  value="preview"
-                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-                >
-                  Preview
-                </TabsTrigger>
-                <TabsTrigger
-                  value="markdown"
-                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-                >
-                  Markdown
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="preview" className="mt-4">
+            <div className="w-full">
+              <div className="mt-4">
                 {isGenerating ? (
                   <div className="flex justify-center items-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
                     <span className="ml-3 text-gray-400">
-                      Generating blog content...
+                      Generating Hooks...
                     </span>
                   </div>
                 ) : (
-                  <BlogContent content={blogContent} />
-                )}
-              </TabsContent>
-              <TabsContent value="markdown" className="mt-4">
-                {isGenerating ? (
-                  <div className="flex justify-center items-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
-                    <span className="ml-3 text-gray-400">
-                      Generating blog content...
-                    </span>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <pre className="bg-[#1a2236] p-4 rounded-md overflow-auto text-gray-300 text-sm">
-                      {blogContent}
-                    </pre>
-                    {/* Add state at the top of your component: const [isCopied, setIsCopied] = useState(false); */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      {hooks?.map((hook, index) => (
+                        <span
+                          key={index}
+                          className="inline-block bg-purple-900/20 text-purple-300 border-purple-800 rounded-full px-3 py-1 me-2 mb-2"
+                        >
+                          {hook}
+                        </span>
+                      ))}
+                    </div>
                     <Button
                       onClick={() => {
-                        navigator.clipboard.writeText(blogContent);
+                        navigator.clipboard.writeText(hooks?.join("\n") || "");
                         setIsCopied(true);
                         setTimeout(() => setIsCopied(false), 2000);
                       }}
-                      className="absolute top-4 right-4 bg-purple-600 hover:bg-purple-700"
+                      className="bg-purple-600 hover:bg-purple-700"
                       size="sm"
                     >
                       {isCopied ? "Copied!" : "Copy"}
                     </Button>
                   </div>
                 )}
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
           </div>
         </Card>
       )}
     </div>
   );
-}
+};
+
+export default Page;

@@ -141,7 +141,7 @@ export default function ConfigPage() {
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <Button
           variant="ghost"
-          className="mb-6 text-purple-600 dark:text-purple-400 hover:text-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900"
+          className="mb-6 text-purple-600 dark:text-purple-400 hover:text-white hover:cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900"
           onClick={() => router.push("/")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

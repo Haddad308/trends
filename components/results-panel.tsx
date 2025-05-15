@@ -12,17 +12,45 @@ import {
   MessageCircle,
   RefreshCw,
   Search,
+  LucideTwitter,
+  TwitterIcon,
+  InstagramIcon,
+  LinkedinIcon,
 } from "lucide-react";
 import { GoogleResultCard } from "@/components/google-result-card";
 import { YoutubeResultCard } from "@/components/youtube-result-card";
+import { LinkedInResultCard } from "@/components/cards/LinkedInResultCard";
 import { RedditResultCard } from "@/components/reddit-result-card";
-import { GoogleResult, RedditResult, YoutubeResult } from "@/app/types";
+import {
+  GoogleResult,
+  InstagramHashtag,
+  InstagramPlace,
+  InstagramResult,
+  InstagramUser,
+  LinkedInResult,
+  RedditResult,
+  SearchTab,
+  TikTokResult,
+  XResult,
+  YoutubeResult,
+} from "@/app/types";
+import { PaginationNavigation } from "./PaginationNavigation";
+import { XResultCard } from "./cards/XResultCard";
+import { InstagramUserCard } from "./cards/instagram/InstagramUserCard";
+import { InstagramHashtagCard } from "./cards/instagram/InstagramHashtagCard";
+import { InstagramPlaceCard } from "./cards/instagram/InstagramPlaceCard";
+import TiktokIcon from "./icons/TiktokIcon";
+import TikTokResultCard from "./cards/TiktokResultCard";
 
 interface ResultsPanelProps {
   results: {
     google: GoogleResult[];
     youtube: YoutubeResult[];
     reddit: RedditResult[];
+    x: XResult[];
+    instagram: InstagramResult;
+    tiktok: TikTokResult[];
+    linkedIn: LinkedInResult[];
   };
   searchTerm: string;
   isLoading: boolean;
@@ -35,8 +63,12 @@ export function ResultsPanel({
   isLoading,
   onRelatedSearchClick,
 }: ResultsPanelProps) {
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState<SearchTab>("google");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const itemsPerPage =
+    activeTab === "youtube" ? 6 : activeTab === "instagram" ? 10 : 5; // Number of items to display per page
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -57,7 +89,7 @@ export function ResultsPanel({
         </h2>
         <p className="text-slate-400 max-w-md">
           Enter a search term in the command palette to see results from Google,
-          YouTube, and Reddit.
+          YouTube, Reddit, and more.
         </p>
       </div>
     );
@@ -72,10 +104,42 @@ export function ResultsPanel({
     );
   }
 
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = currentPage * itemsPerPage;
+
+  const allInstagramResults = [
+    ...results.instagram.hashtags.map((hashtag) => ({
+      type: "hashtag",
+      data: hashtag,
+    })),
+    ...results.instagram.users.map((user) => ({
+      type: "user",
+      data: user,
+    })),
+    ...results.instagram.places.map((place) => ({
+      type: "place",
+      data: place,
+    })),
+  ];
+
+  const instagramPaginatedResults = allInstagramResults.slice(
+    startIndex,
+    endIndex
+  );
+
+  const instagramTotalResults =
+    results.instagram.hashtags.length +
+    results.instagram.users.length +
+    results.instagram.places.length;
+
   const hasResults =
     results.google.length > 0 ||
     results.youtube.length > 0 ||
-    results.reddit.length > 0;
+    results.reddit.length > 0 ||
+    results.x.length > 0 ||
+    instagramTotalResults > 0 ||
+    results.tiktok.length > 0 ||
+    results.linkedIn.length > 0;
 
   if (!hasResults) {
     return (
@@ -95,12 +159,12 @@ export function ResultsPanel({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-slate-700 flex items-center justify-between">
+      <div className="p-4 border-b border-slate-700 flex items-center sm:justify-between flex-wrap justify-center gap-4">
         <div>
           <h2 className="text-xl font-bold text-white">
-            Results for {searchTerm}&rdquo;
+            Results for &rdquo;{searchTerm}&rdquo;
           </h2>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap justify-center">
             <Badge
               variant="outline"
               className="bg-blue-900/20 text-blue-400 border-blue-800"
@@ -122,6 +186,36 @@ export function ResultsPanel({
               <MessageCircle className="h-3 w-3 mr-1" />
               {results.reddit.length}
             </Badge>
+            <Badge
+              variant="outline"
+              className="bg-slate-900 border-black text-slate-400"
+            >
+              <TwitterIcon className="h-3 w-3 mr-1" />
+              {results.x.length}
+            </Badge>
+            <Badge
+              variant="outline"
+              className="bg-pink-950/95 border-pink-900 text-pink-400"
+            >
+              <InstagramIcon className="h-3 w-3 mr-1" />
+              {results.instagram.users.length +
+                results.instagram.hashtags.length +
+                results.instagram.places.length}
+            </Badge>
+            <Badge
+              variant="outline"
+              className="bg-slate-900 border-black text-slate-400"
+            >
+              <TiktokIcon />
+              {results.tiktok.length}
+            </Badge>
+            <Badge
+              variant="outline"
+              className="bg-blue-900 border-blue text-blue-400"
+            >
+              <LinkedinIcon />
+              {results.linkedIn.length}
+            </Badge>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -142,17 +236,15 @@ export function ResultsPanel({
 
       <Tabs
         value={activeTab}
-        onValueChange={setActiveTab}
+        onValueChange={(value: string) => {
+          const tab = value as SearchTab;
+          setActiveTab(tab);
+          setCurrentPage(1);
+        }}
         className="flex-1 flex flex-col"
       >
-        <div className="px-4 pt-4">
-          <TabsList className="grid grid-cols-4 bg-slate-900">
-            <TabsTrigger
-              value="all"
-              className="data-[state=active]:bg-slate-800"
-            >
-              All Results
-            </TabsTrigger>
+        <div className="px-4 pt-4 flex justify-center">
+          <TabsList className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 bg-slate-900 !h-fit">
             <TabsTrigger
               value="google"
               className="flex items-center justify-center gap-2 data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-300"
@@ -174,77 +266,51 @@ export function ResultsPanel({
               <MessageCircle className="h-4 w-4" />
               Reddit
             </TabsTrigger>
+            <TabsTrigger
+              value="x"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-slate-950/90"
+            >
+              <LucideTwitter className="h-4 w-4" />X
+            </TabsTrigger>
+            <TabsTrigger
+              value="instagram"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-pink-950/90 data-[state=active]:text-pink-300"
+            >
+              <InstagramIcon className="h-4 w-4" />
+              Instagram
+            </TabsTrigger>
+            <TabsTrigger
+              value="tiktok"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-slate-950/90"
+            >
+              <TiktokIcon />
+              Tiktok
+            </TabsTrigger>
+            <TabsTrigger
+              value="linkedIn"
+              className="flex items-center justify-center gap-2 data-[state=active]:bg-blue-950/90"
+            >
+              <LinkedinIcon />
+              LinkedIn
+            </TabsTrigger>
           </TabsList>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 h-[calc(100vh-180px)]">
-          <TabsContent value="all" className="h-full mt-0 space-y-6">
-            {/* Related Searches
-            <RelatedSearches
-              searchTerm={searchTerm}
-              onRelatedSearchClick={onRelatedSearchClick}
-            /> */}
-
-            {/* Google Results */}
-            {results.google.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-blue-500" />
-                  <h3 className="text-lg font-semibold text-blue-300">
-                    Google Results
-                  </h3>
-                </div>
-                <div className="grid grid-cols-1 gap-4">
-                  {results.google.map((result, index) => (
-                    <GoogleResultCard key={`google-${index}`} result={result} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* YouTube Results */}
-            {results.youtube.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Youtube className="h-5 w-5 text-red-500" />
-                  <h3 className="text-lg font-semibold text-red-300">
-                    YouTube Results
-                  </h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {results.youtube.map((result, index) => (
-                    <YoutubeResultCard
-                      key={`youtube-${index}`}
-                      video={result}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Reddit Results */}
-            {results.reddit.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="h-5 w-5 text-orange-500" />
-                  <h3 className="text-lg font-semibold text-orange-300">
-                    Reddit Results
-                  </h3>
-                </div>
-                <div className="grid grid-cols-1 gap-4">
-                  {results.reddit.map((result, index) => (
-                    <RedditResultCard key={`reddit-${index}`} post={result} />
-                  ))}
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
+        <div className="flex-1 overflow-y-auto p-4">
           <TabsContent value="google" className="h-full mt-0">
             <div className="grid grid-cols-1 gap-4">
-              {results.google.map((result, index) => (
-                <GoogleResultCard key={`google-tab-${index}`} result={result} />
-              ))}
+              {results.google
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <GoogleResultCard
+                    key={`google-tab-${index}`}
+                    result={result}
+                  />
+                ))}
+
               {results.google.length === 0 && (
                 <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
                   <p className="text-slate-400">No Google results to display</p>
@@ -255,12 +321,17 @@ export function ResultsPanel({
 
           <TabsContent value="youtube" className="h-full mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {results.youtube.map((result, index) => (
-                <YoutubeResultCard
-                  key={`youtube-tab-${index}`}
-                  video={result}
-                />
-              ))}
+              {results.youtube
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <YoutubeResultCard
+                    key={`youtube-tab-${index}`}
+                    video={result}
+                  />
+                ))}
               {results.youtube.length === 0 && (
                 <Card className="col-span-2 p-8 text-center bg-slate-800/50 border-slate-700">
                   <p className="text-slate-400">
@@ -273,9 +344,14 @@ export function ResultsPanel({
 
           <TabsContent value="reddit" className="h-full mt-0">
             <div className="grid grid-cols-1 gap-4">
-              {results.reddit.map((result, index) => (
-                <RedditResultCard key={`reddit-tab-${index}`} post={result} />
-              ))}
+              {results.reddit
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <RedditResultCard key={`reddit-tab-${index}`} post={result} />
+                ))}
               {results.reddit.length === 0 && (
                 <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
                   <p className="text-slate-400">No Reddit results to display</p>
@@ -283,7 +359,123 @@ export function ResultsPanel({
               )}
             </div>
           </TabsContent>
+
+          <TabsContent value="x" className="h-full mt-0">
+            <div className="grid grid-cols-1 gap-4">
+              {results.x
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <XResultCard key={`x-tab-${index}`} tweet={result} />
+                ))}
+              {results.x.length === 0 && (
+                <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
+                  <p className="text-slate-400">No X results to display</p>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="instagram" className="h-full mt-0">
+            <div className="grid grid-cols-1 gap-4">
+              {
+                <>
+                  {instagramPaginatedResults.map((item, index) => {
+                    if (item.type === "hashtag") {
+                      return (
+                        <InstagramHashtagCard
+                          key={`instagram-hashtag-tab-${index}`}
+                          hashtag={item.data as InstagramHashtag}
+                        />
+                      );
+                    } else if (item.type === "user") {
+                      return (
+                        <InstagramUserCard
+                          key={`instagram-user-tab-${index}`}
+                          user={item.data as InstagramUser}
+                        />
+                      );
+                    } else if (item.type === "place") {
+                      return (
+                        <InstagramPlaceCard
+                          key={`instagram-place-tab-${index}`}
+                          place={item.data as InstagramPlace}
+                        />
+                      );
+                    }
+                    return null;
+                  })}
+                  {instagramPaginatedResults.length === 0 && (
+                    <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
+                      <p className="text-slate-400">
+                        No Instagram results to display
+                      </p>
+                    </Card>
+                  )}
+                </>
+              }
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tiktok" className="h-full mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {results.tiktok
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <TikTokResultCard key={`tiktok-tab-${index}`} item={result} />
+                ))}
+              {results.tiktok.length === 0 && (
+                <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
+                  <p className="text-slate-400">No Tiktok results to display</p>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="linkedIn" className="h-full mt-0">
+            <div className="grid grid-cols-1 gap-4">
+              {results.linkedIn
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((result, index) => (
+                  <LinkedInResultCard
+                    key={`linkedIn-tab-${index}`}
+                    post={result}
+                  />
+                ))}
+              {results.linkedIn.length === 0 && (
+                <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
+                  <p className="text-slate-400">
+                    No LinkedIn results to display
+                  </p>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
         </div>
+        {activeTab !== "instagram" && results[activeTab].length > 5 && (
+          <PaginationNavigation
+            currentPage={currentPage}
+            totalItems={results[activeTab].length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        )}
+        {activeTab === "instagram" && instagramTotalResults > 5 && (
+          <PaginationNavigation
+            currentPage={currentPage}
+            totalItems={instagramTotalResults}
+            itemsPerPage={itemsPerPage}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
+        )}
       </Tabs>
     </div>
   );
