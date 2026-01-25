@@ -18,7 +18,7 @@ export default function Home() {
   }, [user, router]);
 
   return (
-    <main className="min-h-screen bg-slate-900 text-white">
+    <main className="pb-10 min-h-screen bg-slate-900 text-white space-y-2">
       <SearchDashboard />
       <CreateContentSection />
     </main>

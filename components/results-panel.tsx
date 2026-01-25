@@ -429,12 +429,12 @@ export function ResultsPanel({
                 .map((result, index) => (
                   <TikTokResultCard key={`tiktok-tab-${index}`} item={result} />
                 ))}
-              {results.tiktok.length === 0 && (
-                <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
-                  <p className="text-slate-400">No Tiktok results to display</p>
-                </Card>
-              )}
             </div>
+            {results.tiktok.length === 0 && (
+              <Card className="p-8 text-center bg-slate-800/50 border-slate-700">
+                <p className="text-slate-400">No Tiktok results to display</p>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="linkedIn" className="h-full mt-0">
