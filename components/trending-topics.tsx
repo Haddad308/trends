@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, TrendingUp, Sparkles } from "lucide-react";
 import { generateTopicsBasedOnSearch } from "@/lib/api";
 import { useTrendingTopics } from "@/store/useTrendingTopics";
+import { useAuth } from "@/firebase/auth-context";
 
 interface TrendingTopicsProps {
   onTopicClick: (topic: string) => void;
@@ -17,9 +18,13 @@ export function TrendingTopics({
 }: TrendingTopicsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { categories, featured, setTrendingTopics } = useTrendingTopics();
+  const freeSearchCount = useAuth().user?.freeSearchCount;
 
   useEffect(() => {
     const fetchTrendingTopics = async () => {
+      // Check if the user has used all free searches
+      if (freeSearchCount === 0) return;
+
       if (searchTerm.length < 2) return;
 
       setIsLoading(true);
